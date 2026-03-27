@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Fire UID Checker - MS BHAI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Free Fire UID Checker • MS BHAI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,107 +13,136 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-            color: #fff;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            background: radial-gradient(circle at 10% 20%, #0b0e1a, #0a0c18);
+            color: #f0f3fa;
             min-height: 100vh;
-            padding: 20px;
+            padding: 24px 16px;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 680px;
             margin: 0 auto;
         }
 
-        .header {
+        /* header section */
+        .brand {
             text-align: center;
-            margin-bottom: 30px;
-            padding-top: 20px;
+            margin-bottom: 28px;
         }
 
         .fire-icon {
-            font-size: 40px;
-            color: #FF5733;
-            margin-bottom: 10px;
+            font-size: 48px;
+            filter: drop-shadow(0 4px 12px rgba(255, 87, 51, 0.4));
+            background: linear-gradient(135deg, #ff6a3d, #ff3a1a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: none;
         }
 
-        .header h1 {
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 10px;
+        .brand h1 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFF, #FFA07A);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            margin-top: 8px;
         }
 
-        .search-container {
-            margin-bottom: 30px;
+        .brand p {
+            color: #9aa3c2;
+            font-size: 0.85rem;
+            margin-top: 6px;
         }
 
-        .input-container {
+        /* search panel */
+        .search-panel {
+            background: rgba(20, 25, 50, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 6px 6px 6px 20px;
             display: flex;
             align-items: center;
-            background: #1a1f3a;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #2a3555;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 20px;
+            transition: all 0.2s;
         }
 
-        .search-icon {
-            color: #888;
-            margin-right: 10px;
-            font-size: 20px;
+        .search-panel:focus-within {
+            border-color: #ff5e3a;
+            box-shadow: 0 0 0 3px rgba(255, 87, 51, 0.2);
+        }
+
+        .search-panel i {
+            color: #ff7a5c;
+            font-size: 1.3rem;
         }
 
         #uidInput {
             flex: 1;
             background: transparent;
             border: none;
-            color: #fff;
-            font-size: 16px;
+            color: white;
+            font-size: 1rem;
+            padding: 14px 0;
             outline: none;
+            font-weight: 500;
         }
 
         #uidInput::placeholder {
-            color: #666;
+            color: #6c729b;
+            font-weight: normal;
         }
 
         .search-button {
-            background: #FF5733;
+            background: linear-gradient(95deg, #ff5e3a, #ff3a1a);
             border: none;
-            border-radius: 12px;
-            height: 50px;
-            width: 100%;
-            color: white;
-            font-size: 18px;
+            border-radius: 40px;
+            padding: 12px 24px;
             font-weight: bold;
+            font-size: 0.95rem;
+            color: white;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 14px rgba(255, 58, 26, 0.3);
         }
 
         .search-button:hover {
-            background: #ff6b4a;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 87, 51, 0.3);
+            transform: scale(0.97);
+            background: linear-gradient(95deg, #ff704d, #ff4c2e);
+            box-shadow: 0 4px 10px rgba(255, 58, 26, 0.4);
         }
 
         .search-button:disabled {
-            background: #555;
+            opacity: 0.6;
+            transform: none;
             cursor: not-allowed;
         }
 
+        /* loading */
         .loading {
-            display: none;
+            background: #12162c;
+            border-radius: 28px;
+            padding: 32px;
             text-align: center;
-            margin: 20px 0;
+            margin: 16px 0;
         }
 
         .spinner {
-            border: 3px solid #2a3555;
-            border-top: 3px solid #FF5733;
+            width: 44px;
+            height: 44px;
+            border: 4px solid #2d325a;
+            border-top: 4px solid #ff5e3a;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
         }
 
         @keyframes spin {
@@ -122,33 +150,62 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* error card */
+        .error-message {
+            background: rgba(255, 60, 60, 0.12);
+            border-left: 5px solid #ff4444;
+            padding: 16px 20px;
+            border-radius: 24px;
+            color: #ffb5b5;
+            margin: 20px 0;
+            backdrop-filter: blur(4px);
+        }
+
+        /* results grid */
         .result-container {
             display: none;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+            margin: 16px 0 20px;
         }
 
         .info-card {
-            background: #1a1f3a;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 15px;
-            border: 1px solid #2a3555;
-            transition: all 0.3s;
+            background: rgba(18, 22, 45, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
         .info-card:hover {
-            border-color: #3a4565;
+            border-color: rgba(255, 90, 50, 0.5);
+            background: rgba(26, 31, 60, 0.9);
             transform: translateY(-2px);
         }
 
-        .info-row {
-            display: flex;
-            align-items: center;
-        }
-
         .info-icon {
-            font-size: 22px;
-            margin-right: 15px;
-            width: 24px;
+            font-size: 26px;
+            width: 38px;
             text-align: center;
         }
 
@@ -157,418 +214,377 @@
         }
 
         .info-label {
-            font-size: 12px;
-            color: #888;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #9aa2cc;
             margin-bottom: 4px;
+            font-weight: 500;
         }
 
         .info-value {
-            font-size: 16px;
-            color: #fff;
-            font-weight: 600;
-            word-wrap: break-word;
+            font-weight: 700;
+            font-size: 1rem;
+            word-break: break-word;
+            line-height: 1.35;
+            color: #f0f3ff;
         }
 
-        .ban-status-card {
-            border-width: 2px;
+        /* ban specific card */
+        .ban-card {
+            border-width: 1.5px;
+            transition: all 0.2s;
+            margin-top: 8px;
         }
 
         .safe {
-            border-color: #00FF00;
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.08);
         }
 
         .banned {
-            border-color: #FF0000;
-        }
-
-        .ban-message {
-            font-size: 15px;
-            line-height: 22px;
-            margin-top: 5px;
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
         }
 
         .hack-warning {
-            color: #FF4444;
-            margin-top: 8px;
-            font-size: 14px;
-        }
-
-        .error-message {
-            background: #ff000020;
-            border: 1px solid #FF0000;
-            color: #FF6666;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
+            background: rgba(231, 76, 60, 0.2);
+            padding: 8px 12px;
+            border-radius: 40px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            display: inline-block;
+            font-weight: 600;
         }
 
         .footer {
             text-align: center;
             margin-top: 40px;
-            padding: 20px;
-            color: #888;
-            font-size: 14px;
+            padding: 20px 10px;
+            font-size: 0.75rem;
+            color: #6b729b;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        @media (max-width: 540px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .search-panel {
+                padding: 4px 4px 4px 16px;
+            }
+            .search-button {
+                padding: 10px 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="fire-icon">🔥</div>
-            <h1>Free Fire UID Checker</h1>
-        </div>
-
-        <div class="search-container">
-            <div class="input-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="uidInput" placeholder="Enter UID" maxlength="15">
-            </div>
-            <button class="search-button" id="searchBtn" onclick="searchPlayer()">Search</button>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 10px;">Fetching player data...</p>
-        </div>
-
-        <div id="errorMessage" style="display: none;" class="error-message"></div>
-
-        <div class="result-container" id="results">
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-calendar info-icon" style="color: #4A90E2;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Date</div>
-                        <div class="info-value" id="date">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-clock info-icon" style="color: #FFA500;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Time</div>
-                        <div class="info-value" id="time">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-tv info-icon" style="color: #E91E63;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Channel</div>
-                        <div class="info-value" id="channel">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-code info-icon" style="color: #9C27B0;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Developer</div>
-                        <div class="info-value" id="developer">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-message info-icon" style="color: #00BCD4;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Message</div>
-                        <div class="info-value" id="message">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-check-circle info-icon" style="color: #4CAF50;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Status</div>
-                        <div class="info-value" id="status">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-fingerprint info-icon" style="color: #4A90E2;"></i>
-                    <div class="info-content">
-                        <div class="info-label">ID</div>
-                        <div class="info-value" id="uid">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-globe info-icon" style="color: #2196F3;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Region</div>
-                        <div class="info-value" id="region">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-trophy info-icon" style="color: #FF6347;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Level</div>
-                        <div class="info-value" id="level">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-medal info-icon" style="color: #FFD700;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Ranked Points</div>
-                        <div class="info-value" id="rankedPoints">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-thumbs-up info-icon" style="color: #FF4081;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Likes</div>
-                        <div class="info-value" id="likes">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-shirt info-icon" style="color: #8BC34A;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Skins Equipadas</div>
-                        <div class="info-value" id="skins">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-user info-icon" style="color: #50C878;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Nickname</div>
-                        <div class="info-value" id="nickname">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-cake-candles info-icon" style="color: #FFD700;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Account Created</div>
-                        <div class="info-value" id="accountCreated">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-chart-line info-icon" style="color: #FF9800;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Experience (XP)</div>
-                        <div class="info-value" id="experience">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-file-lines info-icon" style="color: #9370DB;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Signature / Bio</div>
-                        <div class="info-value" id="bio">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-star info-icon" style="color: #FFEB3B;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Influencer</div>
-                        <div class="info-value" id="influencer">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-rotate info-icon" style="color: #03A9F4;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Profile Updated</div>
-                        <div class="info-value" id="profileUpdated">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-clock info-icon" style="color: #FFA500;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Last Login</div>
-                        <div class="info-value" id="lastLogin">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <i class="fas fa-gem info-icon" style="color: #00CED1;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Prime / Diamonds</div>
-                        <div class="info-value" id="prime">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-card ban-status-card" id="banStatusCard">
-                <div class="info-row">
-                    <i class="fas fa-shield-halved info-icon" id="banIcon" style="color: #00FF00;"></i>
-                    <div class="info-content">
-                        <div class="info-label">Account Status</div>
-                        <div class="info-value ban-message" id="banMessage" style="color: #00FF00;">Checking...</div>
-                        <div id="hackWarning" class="hack-warning" style="display: none;">
-                            ⚠️ Hack Usage Detected
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>Developed by MS BHAI</p>
-            <p style="margin-top: 5px; font-size: 12px;">Free Fire UID Checker Tool</p>
-        </div>
+<div class="container">
+    <div class="brand">
+        <div class="fire-icon">🔥</div>
+        <h1>FF UID CHECKER</h1>
+        <p>Real-time player stats & ban status • MS BHAI</p>
     </div>
 
-    <script>
-        // CORS Proxy ko use kar rahe hain
-        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-        const API_URL = 'https://abbas-apis.vercel.app/api/ff-info';
+    <div class="search-panel">
+        <i class="fas fa-id-card"></i>
+        <input type="text" id="uidInput" placeholder="Enter Free Fire UID (e.g., 123456789)" maxlength="15" autocomplete="off">
+        <button class="search-button" id="searchBtn">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
 
-        async function searchPlayer() {
-            const uid = document.getElementById('uidInput').value.trim();
+    <div class="loading" id="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Fetching player intelligence ...</p>
+    </div>
+
+    <div id="errorMessage" style="display: none;" class="error-message"></div>
+
+    <div class="result-container" id="results">
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Ban status card will be dynamically inserted but we keep separate for clarity -->
+        <div id="banCardContainer"></div>
+    </div>
+
+    <div class="footer">
+        <p>⚡ Developed by <strong>MS BHAI</strong> • Anti-cheat check integrated</p>
+        <p style="margin-top: 6px; font-size: 11px;">Data via official FF API proxy | Real-time ban verification</p>
+    </div>
+</div>
+
+<script>
+    // ---------- CONFIGURATION ----------
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    const API_BASE = 'https://abbas-apis.vercel.app/api/ff-info';
+
+    // Helper: fetch player data from API
+    async function fetchPlayerData(uid) {
+        const targetUrl = `${API_BASE}?uid=${encodeURIComponent(uid)}`;
+        const proxied = `${CORS_PROXY}${encodeURIComponent(targetUrl)}`;
+        const response = await fetch(proxied);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        return json;
+    }
+
+    // Determine ban status based on actual API fields (status, message, etc)
+    // Returns { isBanned: boolean, banMessage: string, rawMessage: string }
+    function evaluateBanFromApiData(apiData) {
+        // Default fallback (safe)
+        let isBanned = false;
+        let banMessageText = "There is currently not enough evidence to prove that this account is using hacks. Account is safe!";
+        let rawMessage = "";
+
+        // Look for fields that could indicate ban status
+        // Common keys: status, message, Account Status, Ban, Banned
+        const statusField = apiData['status'] || apiData['Account Status'] || apiData['ban_status'] || '';
+        const messageField = apiData['message'] || apiData['ban_reason'] || apiData['warning'] || '';
+        
+        // Combine everything to check keywords
+        const combinedText = (statusField + ' ' + messageField).toLowerCase();
+        
+        // Ban keywords (multiple languages but mostly english/portuguese)
+        const banKeywords = ['banned', 'banido', 'hack', 'cheat', 'suspicious', 'violation', 'permanent', 'suspension', 'bloqueado'];
+        const isBannedByKeywords = banKeywords.some(keyword => combinedText.includes(keyword));
+        
+        // Also if the API explicitly returns success false for banned accounts (old logic but we merge)
+        const successFlag = apiData.success === false; 
+        
+        if (isBannedByKeywords || successFlag) {
+            isBanned = true;
+            // Use meaningful ban message if exists, else default
+            if (messageField && messageField.length > 5) {
+                banMessageText = messageField;
+            } else if (statusField && statusField.toLowerCase().includes('ban')) {
+                banMessageText = statusField;
+            } else {
+                banMessageText = "⚠️ We have confirmed that this account has used hack(s) and has been banned.";
+            }
+            rawMessage = messageField || statusField || "Violation detected";
+        } else {
+            // Safe: we preserve the original "safe" message if present from API, else default
+            if (messageField && messageField.toLowerCase().includes('safe')) {
+                banMessageText = messageField;
+            } else if (statusField && statusField.toLowerCase().includes('safe')) {
+                banMessageText = statusField;
+            } else {
+                banMessageText = "✅ There is currently not enough evidence to prove that this account is using hacks. Account is safe!";
+            }
+        }
+        
+        // Extra: some APIs return a field named "ban" boolean
+        if (apiData.ban === true || apiData.isBanned === true) {
+            isBanned = true;
+            banMessageText = apiData.ban_reason || "Permanent ban detected by security system.";
+        }
+        
+        return { isBanned, banMessage: banMessageText, rawMessage };
+    }
+
+    // Render all stats cards dynamically
+    function renderStatsGrid(data, uid) {
+        const grid = document.getElementById('statsGrid');
+        grid.innerHTML = '';
+        
+        // Define all interesting fields to display (nice mapping)
+        const fieldMap = [
+            { label: "Date", key: "Date", icon: "fas fa-calendar-alt", color: "#4A90E2" },
+            { label: "Time", key: "Time", icon: "fas fa-clock", color: "#FFA500" },
+            { label: "Channel", key: "channel", icon: "fas fa-tv", color: "#E91E63" },
+            { label: "Developer", key: "developer", icon: "fas fa-code", color: "#9C27B0", custom: (v) => v === 'AnkuCode' ? 'MS BHAI' : v },
+            { label: "Message", key: "message", icon: "fas fa-message", color: "#00BCD4" },
+            { label: "Status", key: "status", icon: "fas fa-check-circle", color: "#4CAF50" },
+            { label: "UID", key: "🆔 ID", icon: "fas fa-fingerprint", color: "#4A90E2" },
+            { label: "Region", key: "🌎 Region", icon: "fas fa-globe", color: "#2196F3" },
+            { label: "Level", key: "🎖️ Level", icon: "fas fa-trophy", color: "#FF6347" },
+            { label: "Ranked Points", key: "🏆 Ranked Points", icon: "fas fa-medal", color: "#FFD700" },
+            { label: "Likes", key: "👍 Likes", icon: "fas fa-thumbs-up", color: "#FF4081" },
+            { label: "Skins Equipadas", key: "👕 Skins Equipadas", icon: "fas fa-shirt", color: "#8BC34A" },
+            { label: "Nickname", key: "👤 Nickname", icon: "fas fa-user", color: "#50C878" },
+            { label: "Account Created", key: "📅 Account Created", icon: "fas fa-cake-candles", color: "#FFD700" },
+            { label: "Experience (XP)", key: "📈 Experience (XP)", icon: "fas fa-chart-line", color: "#FF9800" },
+            { label: "Signature / Bio", key: "📝 Signature – Bio", icon: "fas fa-file-lines", color: "#9370DB" },
+            { label: "Influencer", key: "📢 Influencer", icon: "fas fa-star", color: "#FFEB3B" },
+            { label: "Profile Updated", key: "🔄 Profile Updated", icon: "fas fa-rotate", color: "#03A9F4" },
+            { label: "Last Login", key: "🕒 Last Login", icon: "fas fa-clock", color: "#FFA500" },
+            { label: "Prime / Diamonds", key: "🥇 Prime", icon: "fas fa-gem", color: "#00CED1" }
+        ];
+        
+        for (let field of fieldMap) {
+            let rawValue = data[field.key];
+            if (rawValue === undefined || rawValue === null) rawValue = "—";
+            if (field.custom && typeof field.custom === 'function') {
+                rawValue = field.custom(rawValue);
+            }
+            if (rawValue === "") rawValue = "—";
             
-            if (!uid) {
-                showError('Please enter a UID');
-                return;
-            }
-
-            document.getElementById('results').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('searchBtn').disabled = true;
-
-            try {
-                // CORS proxy ke saath API call
-                const url = `${CORS_PROXY}${encodeURIComponent(API_URL + '?uid=' + uid)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.success && data.data) {
-                    displayPlayerData(data.data, uid);
-                    checkBanStatus(uid);
-                } else {
-                    showError('Player not found. Please check the UID and try again.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Failed to fetch player data. Please check your internet connection and try again.');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('searchBtn').disabled = false;
-            }
+            const card = document.createElement('div');
+            card.className = 'info-card';
+            card.innerHTML = `
+                <div class="info-icon" style="color: ${field.color}"><i class="${field.icon}"></i></div>
+                <div class="info-content">
+                    <div class="info-label">${field.label}</div>
+                    <div class="info-value">${escapeHtml(String(rawValue))}</div>
+                </div>
+            `;
+            grid.appendChild(card);
         }
-
-        function displayPlayerData(data, uid) {
-            const developer = data['developer'] === 'AnkuCode' ? 'MS BHAI' : (data['developer'] || 'MS BHAI');
-
-            document.getElementById('date').textContent = data['Date'] || 'N/A';
-            document.getElementById('time').textContent = data['Time'] || 'N/A';
-            document.getElementById('channel').textContent = data['channel'] || 'N/A';
-            document.getElementById('developer').textContent = developer;
-            document.getElementById('message').textContent = data['message'] || 'N/A';
-            document.getElementById('status').textContent = data['status'] || 'N/A';
-            document.getElementById('uid').textContent = data['🆔 ID'] || uid;
-            document.getElementById('region').textContent = data['🌎 Region'] || 'N/A';
-            document.getElementById('level').textContent = data['🎖️ Level'] || 'N/A';
-            document.getElementById('rankedPoints').textContent = data['🏆 Ranked Points'] || 'N/A';
-            document.getElementById('likes').textContent = data['👍 Likes'] || 'N/A';
-            document.getElementById('skins').textContent = data['👕 Skins Equipadas'] || 'N/A';
-            document.getElementById('nickname').textContent = data['👤 Nickname'] || 'N/A';
-            document.getElementById('accountCreated').textContent = data['📅 Account Created'] || 'N/A';
-            document.getElementById('experience').textContent = data['📈 Experience (XP)'] || 'N/A';
-            document.getElementById('bio').textContent = data['📝 Signature – Bio'] || 'N/A';
-            document.getElementById('influencer').textContent = data['📢 Influencer'] || 'N/A';
-            document.getElementById('profileUpdated').textContent = data['🔄 Profile Updated'] || 'N/A';
-            document.getElementById('lastLogin').textContent = data['🕒 Last Login'] || 'N/A';
-            document.getElementById('prime').textContent = data['🥇 Prime'] || 'N/A';
-
-            document.getElementById('results').style.display = 'block';
+        
+        // Also add fallback for any missing but important: if ID not shown, show raw uid
+        if (!data['🆔 ID'] && uid) {
+            const fallbackCard = document.createElement('div');
+            fallbackCard.className = 'info-card';
+            fallbackCard.innerHTML = `
+                <div class="info-icon" style="color: #aaa"><i class="fas fa-qrcode"></i></div>
+                <div class="info-content">
+                    <div class="info-label">UID (entered)</div>
+                    <div class="info-value">${escapeHtml(uid)}</div>
+                </div>
+            `;
+            grid.appendChild(fallbackCard);
         }
-
-        async function checkBanStatus(uid) {
-            try {
-                const url = `${CORS_PROXY}${encodeURIComponent(API_URL + '?uid=' + uid)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                const banCard = document.getElementById('banStatusCard');
-                const banIcon = document.getElementById('banIcon');
-                const banMessage = document.getElementById('banMessage');
-                const hackWarning = document.getElementById('hackWarning');
-
-                if (data.success) {
-                    banCard.classList.remove('banned');
-                    banCard.classList.add('safe');
-                    banIcon.style.color = '#00FF00';
-                    banIcon.className = 'fas fa-shield-halved info-icon';
-                    banMessage.style.color = '#00FF00';
-                    banMessage.textContent = 'There is currently not enough evidence to prove that this account is using hacks. Account is safe!';
-                    hackWarning.style.display = 'none';
-                } else {
-                    banCard.classList.remove('safe');
-                    banCard.classList.add('banned');
-                    banIcon.style.color = '#FF0000';
-                    banIcon.className = 'fas fa-ban info-icon';
-                    banMessage.style.color = '#FF0000';
-                    banMessage.textContent = 'We have confirmed that this account has used hack(s) and has been banned.';
-                    hackWarning.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Ban check error:', error);
-                const banMessage = document.getElementById('banMessage');
-                banMessage.style.color = '#FFA500';
-                banMessage.textContent = 'Unable to verify ban status.';
-            }
+    }
+    
+    // Render ban status card based on evaluation
+    function renderBanCard(banResult, apiRawData) {
+        const container = document.getElementById('banCardContainer');
+        if (!container) return;
+        
+        const isBanned = banResult.isBanned;
+        const banMsg = banResult.banMessage;
+        
+        // Also gather possible hack warning from API if any extra
+        let extraWarning = '';
+        if (apiRawData['hack_warning'] || apiRawData['cheat_detected']) {
+            extraWarning = apiRawData['hack_warning'] || apiRawData['cheat_detected'];
         }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            document.getElementById('results').style.display = 'none';
+        
+        const cardDiv = document.createElement('div');
+        cardDiv.className = `info-card ban-card ${isBanned ? 'banned' : 'safe'}`;
+        
+        const iconClass = isBanned ? 'fas fa-skull-crossbones' : 'fas fa-shield-halved';
+        const iconColor = isBanned ? '#e74c3c' : '#2ecc71';
+        const messageColor = isBanned ? '#ff9f8f' : '#a3e4c2';
+        
+        let warningHtml = '';
+        if (isBanned) {
+            warningHtml = `<div class="hack-warning" style="background:#e74c3c20; color:#ffaeae;"><i class="fas fa-exclamation-triangle"></i> ⚠️ HACK / CHEAT VIOLATION DETECTED</div>`;
+        } else if (extraWarning) {
+            warningHtml = `<div class="hack-warning" style="background:#ffb34720; color:#ffcd94;"><i class="fas fa-info-circle"></i> ${escapeHtml(extraWarning)}</div>`;
         }
-
-        document.getElementById('uidInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchPlayer();
-            }
+        
+        cardDiv.innerHTML = `
+            <div class="info-icon" style="color: ${iconColor}"><i class="${iconClass}"></i></div>
+            <div class="info-content">
+                <div class="info-label">ACCOUNT STATUS (ANTI-CHEAT)</div>
+                <div class="info-value" style="color: ${messageColor}; font-weight: bold;">${escapeHtml(banMsg)}</div>
+                ${warningHtml}
+            </div>
+        `;
+        
+        container.innerHTML = '';
+        container.appendChild(cardDiv);
+    }
+    
+    // Helper: safe HTML escape
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
         });
-    </script>
+    }
+    
+    // Main search & display routine
+    async function searchPlayer() {
+        const uidInput = document.getElementById('uidInput');
+        const uid = uidInput.value.trim();
+        if (!uid) {
+            showError('❌ Please enter a valid Free Fire UID (numeric ID).');
+            return;
+        }
+        
+        // Reset UI
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        const searchBtn = document.getElementById('searchBtn');
+        searchBtn.disabled = true;
+        
+        try {
+            // Fetch data from API
+            const apiResponse = await fetchPlayerData(uid);
+            
+            // Check if API returned success with data
+            if (!apiResponse || (apiResponse.success === false && !apiResponse.data)) {
+                // Sometimes API may return success false but still contain data?
+                if (apiResponse && apiResponse.data) {
+                    // proceed
+                } else {
+                    throw new Error('Player not found or invalid UID.');
+                }
+            }
+            
+            // Actual data may be under 'data' key or directly at root
+            let playerData = apiResponse.data || apiResponse;
+            
+            // If playerData is empty or missing nickname, likely invalid
+            if (!playerData || (Object.keys(playerData).length === 0 && !playerData['👤 Nickname'])) {
+                throw new Error('No player data returned. Check UID or region.');
+            }
+            
+            // --- BAN EVALUATION using actual fields ---
+            const banEvaluation = evaluateBanFromApiData(playerData);
+            
+            // --- Render all stats ---
+            renderStatsGrid(playerData, uid);
+            
+            // --- Render Ban Card with accurate status ---
+            renderBanCard(banEvaluation, playerData);
+            
+            // Show results container
+            document.getElementById('results').style.display = 'block';
+            
+        } catch (err) {
+            console.error('UID Checker Error:', err);
+            let friendlyMsg = '⚠️ Failed to fetch player information. ';
+            if (err.message.includes('404') || err.message.includes('not found')) {
+                friendlyMsg += 'UID not found in database. Make sure you entered the correct numeric UID.';
+            } else if (err.message.includes('NetworkError') || err.message.includes('fetch')) {
+                friendlyMsg += 'Network issue. Please check your internet and try again.';
+            } else {
+                friendlyMsg += err.message || 'API temporarily unavailable. Retry later.';
+            }
+            showError(friendlyMsg);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+            searchBtn.disabled = false;
+        }
+    }
+    
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.innerHTML = `<i class="fas fa-circle-exclamation" style="margin-right: 10px;"></i> ${escapeHtml(message)}`;
+        errorDiv.style.display = 'block';
+        document.getElementById('results').style.display = 'none';
+    }
+    
+    // Event listeners
+    document.getElementById('uidInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') searchPlayer();
+    });
+    
+    // Attach click listener
+    document.getElementById('searchBtn').addEventListener('click', searchPlayer);
+    
+    // Initial demo note: none
+</script>
 </body>
 </html>
