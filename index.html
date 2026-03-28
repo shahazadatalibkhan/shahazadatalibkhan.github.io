@@ -194,6 +194,8 @@
         const fields = [
             { label: "Date", key: "Date", icon: "fas fa-calendar", color: "#4A90E2" },
             { label: "Time", key: "Time", icon: "fas fa-clock", color: "#FFA500" },
+            // Channel field - hardcoded to "MS TEAM FF"
+            { label: "Channel", key: "channel", icon: "fas fa-tv", color: "#E91E63", customValue: "MS TEAM FF" },
             { label: "Developer", key: "developer", icon: "fas fa-code", color: "#9C27B0", transform: v => v === 'AnkuCode' ? 'MS BHAI' : v },
             { label: "Message", key: "message", icon: "fas fa-message", color: "#00BCD4" },
             { label: "Status", key: "status", icon: "fas fa-check-circle", color: "#4CAF50" },
@@ -214,9 +216,14 @@
         ];
         
         for (let f of fields) {
-            let val = data[f.key];
-            if (val === undefined || val === null) val = '—';
-            if (f.transform) val = f.transform(val);
+            let val;
+            if (f.customValue) {
+                val = f.customValue;
+            } else {
+                val = data[f.key];
+                if (val === undefined || val === null) val = '—';
+                if (f.transform) val = f.transform(val);
+            }
             
             const card = document.createElement('div');
             card.className = 'info-card';
