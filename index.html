@@ -110,8 +110,19 @@
             transition: opacity 0.3s;
             pointer-events: none;
         }
-        .footer { text-align: center; margin-top: 40px; font-size: 0.7rem; color: #6b729b; }
-        button:disabled { opacity: 0.6; }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 15px;
+            font-size: 0.75rem;
+            color: #6b729b;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .footer a {
+            color: #ffaa80;
+            text-decoration: none;
+        }
+        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -119,7 +130,7 @@
     <div class="header">
         <div class="fire-icon">🔥</div>
         <h1>FREE FIRE UID CHECKER</h1>
-        <p class="sub">Player Stats + Ban Check via Garena Official</p>
+        <p class="sub">Player Stats • Official Ban Check</p>
     </div>
 
     <div class="search-card">
@@ -142,7 +153,7 @@
         <div class="ban-section">
             <i class="fas fa-shield-halved" style="font-size: 32px; color: #ffaa44;"></i>
             <h3 style="margin: 10px 0;">🔍 Check Ban Status</h3>
-            <p style="color: #ccc; font-size: 0.9rem;">Ban information is only available on <strong>Garena Official Support</strong>. Click below to open the support page — the UID will be copied automatically so you can paste it into the report form.</p>
+            <p style="color: #ccc; font-size: 0.9rem;">Ban information is <strong>only available on Garena Official Support</strong>. Click below to open the support page — the UID will be copied automatically so you can paste it into the report form.</p>
             <button id="banCheckBtn" class="ban-btn">
                 <i class="fas fa-external-link-alt"></i> Open Garena Support & Copy UID
             </button>
@@ -153,7 +164,10 @@
     </div>
 
     <div class="footer">
-        <p>⚡ Player data via FF Info API • Ban verification via official Garena Support • Developed by MS BHAI</p>
+        <p>⚡ Player data via FF Info API • Ban verification via official Garena Support</p>
+        <p style="margin-top: 8px;">Developed by <strong>MS BHAI</strong> | 
+            <a href="https://t.me/ms_bhai" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
+        </p>
     </div>
     <div id="toast" class="toast">✅ UID copied to clipboard!</div>
 </div>
@@ -280,13 +294,10 @@
             showError('Please search for a UID first.');
             return;
         }
-        // Copy UID to clipboard
         navigator.clipboard.writeText(currentUid).then(() => {
             showToast('✅ UID copied to clipboard!');
-            // Open Garena support page in new tab
             window.open('https://ff.garena.com/en/support/', '_blank');
         }).catch(() => {
-            // Fallback
             prompt('Copy this UID manually:', currentUid);
             window.open('https://ff.garena.com/en/support/', '_blank');
         });
