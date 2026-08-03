@@ -945,41 +945,18 @@
             overflow: hidden;
         }
         .invoice-header {
-            padding: 20px 28px;
+            padding: 24px 28px;
             background: var(--primary-gradient);
             color: #fff;
         }
-        .invoice-header .inv-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .invoice-header .inv-logo {
-            width: 64px;
-            height: 64px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.25);
-            object-fit: contain;
-            flex-shrink: 0;
-        }
         .invoice-header h1 {
-            font-size: 24px;
-            font-weight: 800;
+            font-size: 26px;
+            font-weight: 700;
             margin: 0;
-            letter-spacing: -0.02em;
-        }
-        .invoice-header .tagline {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            opacity: 0.95;
-            margin-top: 2px;
         }
         .invoice-header .sub {
             opacity: 0.85;
-            font-size: 13px;
-            margin-top: 8px;
+            font-size: 14px;
         }
         .invoice-body {
             padding: 24px 28px;
@@ -1807,7 +1784,6 @@
         // ============================================================
 
         let medicines = [];
-        const AGENCY_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAMAAAAOusbgAAABIFBMVEXImDS3oGSlcRvy0mPd3NKniTZbXGB/gIDXqFY/QD1+f4F+gG2Of2WAf4C/v8DMyLABAgUOEhgNFiIyJhVSRi8nGQxvVy+MZzI3NS2tiEopKShPNhaPd0pwZ0vu1422lVHGmUzQplNGOidwRxXTt3FWVlKWdDf++a9mSyf75pKleTfpxnGXhFZHSEqrmGlFKhDSxo+QiGd1dnPHqml4Yze2o27x56kaISqHWydmZ2iIiImvhTjly4jLuYaGVRdlXERaUTp4c1aUlZX01Hj+/sbjvGdXQxvltVVkPBCoqamjfUK7tYnawnX+85qGbEOak296VBjJlTjbs1qPZhc6Mh2vqYTk2qMBDCJeYGLc0pk8PUE9QEPa1aa3uLghDQGBTRNZL8/DAAAAYHRSTlP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9ebwvOAAAT+UlEQVR42uWbB5fbtpaAZTt5yXZAaOy9qHdppJE01dP7uLfk//+LvQCpNjOa4uTtnj3LYycSSeHDLbgFpAvof+ko/N8CY61ud9ry2I2p8T8DNravWoO3cKTpYJCmqfz0/cNugP+ZYLz9AZhpq2HFAWGAwpgZ1G5P1dmO8c8BY7uVvh18sBey2dvzi2T76vvbt99fwH4umJ6lbz+2g3wO8kDaW8fARfkpN4LVevt2Gv+tYPv728FVkEOL8gDcq7Rqo+xbMacH7cHbwS7+u8C7g7RlszkVE/gv1orioHC4oRnFIkIZWwLZdgvQfwvYHqRTOqNKHWv/ZWPEP35Jfn1nfRxYGMcfcrmLStbSNB3YfxlMW2krxyp7glg0sjAi41CMK8n12MBYj7RPStlzNPxI+0tgfJU6ynUltIgbbQU/biKMGDJvfQL/KyKzqWbV3sUzc/9hl9P2XwBTJ20zhS0qsKtLMArHSq5DMTThGiqOTTS/OlM4aaRftJ8Ft1OH5rZFaAN0yg5NKWxYcOGEIVw9gXVruK9DuKkZmAzsb0iFKzcrOenuT4FxlDZYxgXZd2MAI5KUQJitXwtvau7RjRBH+w339qayRRDi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";
         let clients = [];
         let sales = [];
         let purchases = [];
@@ -3679,14 +3655,7 @@ Rules:
 
             const html = `
                 <div class="invoice-header">
-                    <div class="inv-brand">
-                        <img class="inv-logo" src="${AGENCY_LOGO}" alt="M.S AGENCY">
-                        <div>
-                            <h1>M.S AGENCY</h1>
-                            <div class="tagline">TRUSTED • QUALITY • RELIABLE</div>
-                            <div class="tagline" style="font-size:10px;opacity:0.85;">YOUR TRUST, OUR COMMITMENT</div>
-                        </div>
-                    </div>
+                    <h1>M.S AGENCY</h1>
                     <div class="sub">Kursela • Quality Medicines • Ph: 9534526324</div>
                     <div class="sub">GSTIN: GSTIN50054554 &nbsp;|&nbsp; DL No: 153/153A &nbsp;|&nbsp; PAN: 5000</div>
                 </div>
@@ -4592,9 +4561,6 @@ Rules:
                 "<style>" +
                 "body{font-family:system-ui,sans-serif;padding:20px;color:#1a2a26;}" +
                 "h3{margin:0 0 4px 0;}" +
-                ".brand{display:flex;align-items:center;gap:12px;margin-bottom:10px;}" +
-                ".brand img{width:52px;height:52px;border-radius:10px;object-fit:contain;background:#0a7e5c;}" +
-                ".tag{font-size:10px;font-weight:700;color:#0a7e5c;letter-spacing:0.04em;}" +
                 ".card{border:1px solid #ddd;border-radius:10px;padding:14px;margin-bottom:12px;}" +
                 "table{width:100%;border-collapse:collapse;font-size:13px;}" +
                 "th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;}" +
@@ -4602,8 +4568,7 @@ Rules:
                 ".baki{color:#c0392b;}.paid{color:#0a7e5c;}" +
                 "@media print{button{display:none!important;}}" +
                 "</style></head><body>" +
-                '<div class="brand"><img src="'+AGENCY_LOGO+'" alt="logo"><div><h2 style="margin:0;">M.S AGENCY</h2><div class="tag">TRUSTED • QUALITY • RELIABLE</div></div></div>' +
-                "<h3>Client History</h3>" +
+                "<h2>M.S AGENCY — Client History</h2>" +
                 content.innerHTML +
                 "<scr" + "ipt>window.onload=function(){window.print();}</scr" + "ipt>" +
                 "</body></html>"
@@ -5090,11 +5055,8 @@ Rules:
             w.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
                 <style>
                 body{font-family:system-ui,sans-serif;padding:20px;color:#1a2a26;font-size:13px;}
-                h1{font-size:18px;margin:0 0 2px;} h2{font-size:15px;margin:16px 0 8px;}
+                h1{font-size:18px;margin:0 0 4px;} h2{font-size:15px;margin:16px 0 8px;}
                 .sub{color:#5a716a;font-size:12px;margin-bottom:12px;}
-                .brand{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
-                .brand img{width:56px;height:56px;border-radius:10px;object-fit:contain;background:#0a7e5c;border:1px solid #ddd;}
-                .tag{font-size:10px;font-weight:700;letter-spacing:0.04em;color:#0a7e5c;margin-top:2px;}
                 table{width:100%;border-collapse:collapse;margin-top:8px;}
                 th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;}
                 th{background:#f0f4f2;}
@@ -5102,14 +5064,7 @@ Rules:
                 .right{text-align:right;} .total{font-weight:700;font-size:14px;margin-top:12px;}
                 @media print{button{display:none!important;}}
                 </style></head><body>
-                <div class="brand">
-                    <img src="${AGENCY_LOGO}" alt="M.S AGENCY">
-                    <div>
-                        <h1>M.S AGENCY</h1>
-                        <div class="tag">TRUSTED • QUALITY • RELIABLE</div>
-                        <div class="tag" style="font-weight:600;opacity:0.85;">YOUR TRUST, OUR COMMITMENT</div>
-                    </div>
-                </div>
+                <h1>M.S AGENCY</h1>
                 <div class="sub">Kursela • 9534526324 • GSTIN: GSTIN50054554 • DL: 153/153A</div>
                 ${bodyHtml}
                 <p style="margin-top:20px;font-size:11px;color:#888;">Printed: ${new Date().toLocaleString("en-IN")}</p>
