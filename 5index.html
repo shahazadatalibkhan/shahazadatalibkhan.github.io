@@ -1236,10 +1236,10 @@
                     </div>
             </div>
             <div class="header-actions">
-                <button class="btn-icon" id="pwaInstallBtn" onclick="installPWA()" title="Install App" style="width:auto;padding:0 12px;font-size:12px;font-weight:800;background:rgba(255,220,50,0.4);border:1px solid rgba(255,255,255,0.4);gap:4px;white-space:nowrap;">⬇️ Install</button>
                 <span id="syncStatus" style="font-size:12px;font-weight:500;opacity:0.9;margin-right:6px;white-space:nowrap;">💾 Local</span>
                 <button class="btn-icon theme-toggle" onclick="toggleTheme()">🌙</button>
                 <button class="btn-icon" onclick="exportBackup()" title="Download Backup">💾</button>
+                <button class="btn-icon" onclick="showSection('dashboard',document.querySelector('.nav button:first-child'))">📊</button>
             </div>
         </div>
     </header>
@@ -1257,25 +1257,12 @@
         <button onclick="showSection('stockAdjust',this)">📐 Stock Adj.</button>
         <button onclick="showSection('reports',this)">📈 Reports</button>
         <button onclick="showSection('backup',this)">💾 Backup</button>
-        <button type="button" onclick="installPWA()" id="navInstallBtn" style="background:linear-gradient(135deg,#c9a227,#e8c547);color:#1a1500;font-weight:800;border:none;">⬇️ Install App</button>
     </nav>
 
     <main class="container">
 
         <section id="dashboard" class="section active">
-            
-            <!-- Install App Banner -->
-            <div id="installBanner" class="card mb-12" style="background:linear-gradient(135deg,#0a7e5c,#0d9e73);color:#fff;border:none;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="font-size:28px;">📲</div>
-                    <div>
-                        <div style="font-weight:800;font-size:15px;">App Install karein</div>
-                        <div style="font-size:12px;opacity:0.9;">Home screen pe icon lagega — APK jaisa chalega</div>
-                    </div>
-                </div>
-                <button onclick="installPWA()" class="btn" style="background:#fff;color:#0a7e5c;font-weight:800;border:none;padding:10px 18px;border-radius:10px;white-space:nowrap;">⬇️ Install App</button>
-            </div>
-<div class="flex-between mb-12">
+            <div class="flex-between mb-12">
                 <h2 style="font-size:22px;">📊 Dashboard</h2>
                 <button class="btn btn-secondary btn-sm" onclick="refreshAll()">🔄 Refresh</button>
             </div>
@@ -5492,68 +5479,24 @@ Rules:
             toast("⬇️ Install option ready — header me Install dabao");
         });
         function installPWA() {
-            // 1) Chrome / Edge / Android — native prompt
             if (deferredInstallPrompt) {
                 deferredInstallPrompt.prompt();
-                deferredInstallPrompt.userChoice.then(function(choice) {
-                    if (choice && choice.outcome === "accepted") {
-                        toast("App install ho gayi!");
-                    }
+                deferredInstallPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === "accepted") toast("App install ho gayi!");
                     deferredInstallPrompt = null;
                 });
                 return;
             }
-
-            // 2) Already running as installed app?
-            var isStandalone = window.matchMedia("(display-mode: standalone)").matches
-                || window.navigator.standalone === true;
-            if (isStandalone) {
-                alert("App already installed hai.\n\nHome screen pe M.S AGENCY icon check karo.");
-                return;
+            const ua = navigator.userAgent || "";
+            const isIOS = /iphone|ipad|ipod/i.test(ua);
+            const isAndroid = /android/i.test(ua);
+            if (isIOS) {
+                alert("iPhone / iPad pe install:\n\n1. Safari browser me site kholo\n2. Neeche Share button (□↑) dabao\n3. 'Add to Home Screen' select karo\n4. Add dabao");
+            } else if (isAndroid) {
+                alert("Android pe install:\n\n1. Chrome browser use karo (important)\n2. Upar ⋮ (3 dots) menu kholo\n3. 'Install app' YA 'Add to Home screen' dabao\n4. Install confirm karo\n\nAgar option nahi dikhe:\n• Site ko 30 sec open rakho\n• Page reload karo\n• Chrome update karo");
+            } else {
+                alert("Computer pe:\n\nChrome address bar ke right side me install icon (⊕) dikhega.\nYa menu ⋮ → Install M.S AGENCY...");
             }
-
-            var ua = (navigator.userAgent || "").toLowerCase();
-            var isIOS = /iphone|ipad|ipod/.test(ua);
-            var isAndroid = /android/.test(ua);
-            var isSafari = /safari/.test(ua) && !/chrome|crios|fxios|edg/.test(ua);
-            var isChrome = /chrome|crios|edg|samsungbrowser|brave/.test(ua);
-
-            // 3) iOS Safari
-            if (isIOS || isSafari) {
-                alert(
-                    "📱 iPhone / iPad (Safari) pe install:\n\n" +
-                    "1. Neeche Share button dabao (□↑)\n" +
-                    "2. Scroll karke 'Add to Home Screen' select karo\n" +
-                    "3. Add dabao\n\n" +
-                    "Note: Sirf Safari me kaam karta hai (Chrome iOS pe nahi)."
-                );
-                return;
-            }
-
-            // 4) Android / Desktop Chrome-like
-            if (isAndroid || isChrome) {
-                alert(
-                    "📲 App Install:\n\n" +
-                    "1. Browser menu (⋮) kholo\n" +
-                    "2. 'Install app' YA 'Add to Home screen' select karo\n" +
-                    "3. Install confirm karo\n\n" +
-                    "Agar option nahi dikhe:\n" +
-                    "• Chrome browser use karo\n" +
-                    "• Site 30 sec open rakho phir menu dekho\n" +
-                    "• Incognito band karke normal tab me kholo"
-                );
-                return;
-            }
-
-            // 5) Fallback — any other browser
-            alert(
-                "App Install (sab browsers):\n\n" +
-                "• Chrome / Edge: Menu ⋮ → Install app\n" +
-                "• Samsung Internet: Menu → Add page to → Home screen\n" +
-                "• Firefox: Menu → Install\n" +
-                "• Safari (iPhone): Share → Add to Home Screen\n\n" +
-                "Site: " + location.href
-            );
         }
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
