@@ -1325,7 +1325,7 @@
                 </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Medicine</th><th>Company</th><th>Batch</th><th>Expiry</th><th>MRP</th><th>Cost</th><th>Rate</th><th>Stock</th><th>Unit</th><th>Action</th></tr></thead>
+                        <thead><tr><th style="width:48px;">#</th><th>Medicine</th><th>Company</th><th>Batch</th><th>Expiry</th><th>MRP</th><th>Cost</th><th>Rate</th><th>Stock</th><th>Unit</th><th>Action</th></tr></thead>
                         <tbody id="medicineTable"></tbody>
                     </table>
                 </div>
@@ -2226,13 +2226,20 @@
                 const expIds = getExpiring().map(m => String(m.id));
                 list = list.filter(m => expIds.includes(String(m.id)));
             }
+            // Sort by name for stable numbering (optional: keep add order)
+            // Serial # = position in full master list (1-based), not just filtered view
+            const idToSerial = {};
+            medicines.forEach((med, idx) => { idToSerial[String(med.id)] = idx + 1; });
+
             let html = "";
             list.forEach(m => {
                 const low = Number(m.stock) <= Number(m.minStock || 0);
                 const expiring = m.expiry ? new Date(m.expiry) < new Date(Date.now() + 60 * 86400000) : false;
                 const displayName = m.name && String(m.name).trim() ? m.name : "(No Name)";
                 const safeId = String(m.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+                const serial = idToSerial[String(m.id)] || "-";
                 html += `<tr>
+                    <td style="text-align:center;font-weight:800;color:var(--primary);">${serial}</td>
                     <td><b>${escapeHTML(displayName)}</b></td>
                     <td>${escapeHTML(m.company || "-")}</td>
                     <td>${escapeHTML(m.batch || "-")}</td>
@@ -2249,7 +2256,7 @@
                 </tr>`;
             });
             document.getElementById("medicineTable").innerHTML = html ||
-                `<tr><td colspan="10" class="empty">No medicines found</td></tr>`;
+                `<tr><td colspan="11" class="empty">No medicines found</td></tr>`;
         }
 
         function deleteMedicine(id) {
