@@ -5399,31 +5399,18 @@ Rules:
             e.preventDefault();
             deferredInstallPrompt = e;
             const btn = document.getElementById("pwaInstallBtn");
-            if (btn) {
-                btn.style.display = "inline-flex";
-                btn.style.background = "rgba(255,220,50,0.35)";
-            }
-            toast("⬇️ Install option ready — header me Install dabao");
+            if (btn) btn.style.display = "inline-flex";
         });
         function installPWA() {
-            if (deferredInstallPrompt) {
-                deferredInstallPrompt.prompt();
-                deferredInstallPrompt.userChoice.then((choice) => {
-                    if (choice.outcome === "accepted") toast("App install ho gayi!");
-                    deferredInstallPrompt = null;
-                });
+            if (!deferredInstallPrompt) {
+                const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+                alert(isIOS
+                    ? "Safari → Share (□↑) → Add to Home Screen"
+                    : "Chrome menu (⋮) → Install app / Add to Home screen");
                 return;
             }
-            const ua = navigator.userAgent || "";
-            const isIOS = /iphone|ipad|ipod/i.test(ua);
-            const isAndroid = /android/i.test(ua);
-            if (isIOS) {
-                alert("iPhone / iPad pe install:\n\n1. Safari browser me site kholo\n2. Neeche Share button (□↑) dabao\n3. 'Add to Home Screen' select karo\n4. Add dabao");
-            } else if (isAndroid) {
-                alert("Android pe install:\n\n1. Chrome browser use karo (important)\n2. Upar ⋮ (3 dots) menu kholo\n3. 'Install app' YA 'Add to Home screen' dabao\n4. Install confirm karo\n\nAgar option nahi dikhe:\n• Site ko 30 sec open rakho\n• Page reload karo\n• Chrome update karo");
-            } else {
-                alert("Computer pe:\n\nChrome address bar ke right side me install icon (⊕) dikhega.\nYa menu ⋮ → Install M.S AGENCY...");
-            }
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
         }
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
