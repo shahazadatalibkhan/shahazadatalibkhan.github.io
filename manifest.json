@@ -1,0 +1,26 @@
+{
+  "name": "M.S AGENCY - Medicine Management",
+  "short_name": "M.S AGENCY",
+  "description": "Medicine stock, billing, grahak & client management",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a7e5c",
+  "theme_color": "#0a7e5c",
+  "lang": "hi",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
