@@ -1334,13 +1334,33 @@
 
         <section id="purchase" class="section">
             <div class="flex-between mb-12" style="flex-wrap:wrap;gap:8px;">
-                <h2 style="font-size:20px;">📦 Purchase</h2>
+                <h2 style="font-size:20px;">📦 Purchase & Suppliers</h2>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="showSupplierDues()">💰 Supplier Dues</button>
                     <button class="btn btn-secondary btn-sm" onclick="openScanBillModal()">📷 Scan Bill</button>
                     <button class="btn btn-primary" onclick="openPurchaseModal()">+ Purchase Entry</button>
                 </div>
             </div>
+
+            <div class="grid grid-4 mb-12">
+                <div class="stat"><div class="label">Suppliers</div><div class="value" id="supTotalCount">0</div></div>
+                <div class="stat"><div class="label">Udhaar Wale</div><div class="value red" id="supDueCount">0</div></div>
+                <div class="stat"><div class="label">Total Baki</div><div class="value red" id="supTotalBaki">₹0</div></div>
+                <div class="stat"><div class="label">Purchases</div><div class="value" id="supPurchaseCount">0</div></div>
+            </div>
+
+            <div class="card mb-12">
+                <div class="flex-between" style="flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                    <div class="card-title" style="margin:0;">🏭 Supplier List</div>
+                    <select id="supListFilter" onchange="renderSuppliers()" style="max-width:150px;">
+                        <option value="all">All</option>
+                        <option value="dues">Only Baki</option>
+                        <option value="clear">Clear</option>
+                    </select>
+                </div>
+                <input id="supListSearch" placeholder="🔍 Search supplier..." oninput="renderSuppliers()" style="margin-bottom:12px;">
+                <div id="suppliersList"></div>
+            </div>
+
             <div class="card">
                 <div class="card-title">Recent Purchases</div>
                 <div class="table-wrap">
@@ -1610,11 +1630,19 @@
         <div class="modal-box" style="max-width:900px;">
             <div class="modal-head"><h3>📷 Scan / Import Bill (Free)</h3><button class="modal-close" onclick="closeModal('scanBillModal')">✕</button></div>
             <div class="form-grid">
-                <div class="form-group"><label>Supplier Name</label><input id="scanSupplier" placeholder="Distributor name"></div>
+                <div class="form-group">
+                    <label>Supplier (Old select / New type)</label>
+                    <select id="scanSupplierSelect" onchange="onScanSupplierSelect()">
+                        <option value="">— Select old supplier —</option>
+                        <option value="__new__">➕ New Supplier</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Supplier Name *</label><input id="scanSupplier" placeholder="Distributor name" autocomplete="off"></div>
                 <div class="form-group"><label>Bill No</label><input id="scanBillNo" placeholder="Optional"></div>
-                <div class="form-group"><label>Supplier GSTIN</label><input id="scanGstin" placeholder="Supplier GST number"></div>
+                <div class="form-group"><label>Supplier GSTIN</label><input id="scanGstin" placeholder="Old select pe auto-fill"></div>
                 <div class="form-group"><label>Bill Total Amount</label><input id="scanBillTotal" type="number" step="0.01" placeholder="e.g. 6967"></div>
             </div>
+            <p style="font-size:12px;color:var(--text-secondary);margin:-4px 0 10px;">💡 Purana supplier select karo → Name + GSTIN auto fill. Naya ho to “New Supplier” choose karke details type karo.</p>
             <div style="margin:8px 0 12px;padding:12px;border:1px dashed #0a7e5c;border-radius:10px;background:rgba(10,126,92,0.06);">
                 <div style="font-weight:700;margin-bottom:6px;">⭐ Best FREE method — Google Lens</div>
                 <ol style="font-size:12px;margin:0 0 8px 18px;color:var(--text-secondary);line-height:1.5;">
@@ -1650,12 +1678,37 @@
         <div class="modal-box">
             <div class="modal-head"><h3>📦 Purchase Entry</h3><button class="modal-close" onclick="closeModal('purchaseModal')">✕</button></div>
             <div class="form-grid">
-                <div class="form-group"><label>Supplier Name *</label><input id="purchaseSupplier" placeholder="Distributor / Supplier"></div>
+                <div class="form-group">
+                    <label>Supplier (select old / type new) *</label>
+                    <input id="purchaseSupplier" list="purchaseSupplierList" placeholder="Type or select supplier" autocomplete="off" onchange="onPurchaseSupplierPick()" oninput="onPurchaseSupplierPick()">
+                    <datalist id="purchaseSupplierList"></datalist>
+                </div>
                 <div class="form-group"><label>Supplier Bill No</label><input id="purchaseBillNo" placeholder="Bill / Invoice no"></div>
                 <div class="form-group"><label>Supplier GSTIN</label><input id="purchaseGstin" placeholder="e.g. 06AANFO..."></div>
                 <div class="form-group"><label>Bill Total (optional)</label><input id="purchaseBillTotal" type="number" step="0.01" placeholder="Full bill amount"></div>
             </div>
-            <div class="form-group"><label>Medicine</label><select id="purchaseMedicine"></select></div>
+            <div class="form-group">
+                <div class="flex-between" style="align-items:center;margin-bottom:4px;">
+                    <label style="margin:0;">Medicine</label>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="togglePurchaseNewMed()">+ New Medicine / Item</button>
+                </div>
+                <select id="purchaseMedicine"></select>
+            </div>
+            <div id="purchaseNewMedBox" style="display:none;margin:10px 0;padding:12px;border:1px dashed var(--primary);border-radius:12px;background:var(--primary-soft,rgba(10,126,92,0.08));">
+                <div style="font-weight:700;font-size:13px;margin-bottom:8px;">➕ Naya Medicine Master me add karein</div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Name *</label><input id="pNewMedName" placeholder="Medicine name"></div>
+                    <div class="form-group"><label>Company</label><input id="pNewMedCompany" placeholder="Company / Mfg"></div>
+                    <div class="form-group"><label>MRP</label><input id="pNewMedMrp" type="number" step="0.01" placeholder="0"></div>
+                    <div class="form-group"><label>Unit</label><input id="pNewMedUnit" placeholder="Strip / Bottle / Pcs" value="Pcs"></div>
+                    <div class="form-group"><label>HSN</label><input id="pNewMedHsn" placeholder="3004" value="3004"></div>
+                    <div class="form-group"><label>Min Stock</label><input id="pNewMedMin" type="number" value="10"></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addNewMedicineFromPurchase()">✅ Add & Select</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="togglePurchaseNewMed(false)">Cancel</button>
+                </div>
+            </div>
             <div class="form-grid">
                 <div class="form-group"><label>Qty</label><input id="purchaseQty" type="number" min="1"></div>
                 <div class="form-group"><label>Cost (per unit)</label><input id="purchaseCost" type="number" step="0.01"></div>
@@ -1722,6 +1775,24 @@
             <div id="paymentInfo" class="mb-12"></div>
             <div class="form-group"><label>Amount</label><input id="paymentAmount" type="number" placeholder="Amount"></div>
             <button class="btn btn-primary btn-block mt-12" onclick="receivePayment()">💰 Save</button>
+        </div>
+    </div>
+
+    <div id="supplierPaymentModal" class="modal">
+        <div class="modal-box">
+            <div class="modal-head"><h3>💰 Pay Supplier</h3><button class="modal-close" onclick="closeModal('supplierPaymentModal')">✕</button></div>
+            <input type="hidden" id="supPayName">
+            <div id="supPayInfo" class="mb-12"></div>
+            <div class="form-group"><label>Amount Paid *</label><input id="supPayAmount" type="number" step="0.01" min="0" placeholder="Amount"></div>
+            <div class="form-group"><label>Note (optional)</label><input id="supPayNote" placeholder="Cash / UPI / Cheque no."></div>
+            <button class="btn btn-primary btn-block mt-12" onclick="saveSupplierPayment()">💰 Save Payment</button>
+        </div>
+    </div>
+
+    <div id="supplierDetailModal" class="modal">
+        <div class="modal-box" style="max-width:820px;">
+            <div class="modal-head"><h3 id="supplierDetailTitle">Supplier Details</h3><button class="modal-close" onclick="closeModal('supplierDetailModal')">✕</button></div>
+            <div id="supplierDetailContent"></div>
         </div>
     </div>
 
@@ -1825,6 +1896,7 @@
         let sales = [];
         let purchases = [];
         let payments = [];
+        let supplierPayments = [];
         let returns = [];
         let reportPeriod = "all"; // today | month | all
         let adjustments = [];
@@ -1875,6 +1947,7 @@
                 localStorage.setItem("MS_SALES", JSON.stringify(sales));
                 localStorage.setItem("MS_PURCHASES", JSON.stringify(purchases));
                 localStorage.setItem("MS_PAYMENTS", JSON.stringify(payments));
+                localStorage.setItem("MS_SUPPLIER_PAYMENTS", JSON.stringify(supplierPayments));
                 localStorage.setItem("MS_RETURNS", JSON.stringify(returns));
                 localStorage.setItem("MS_ADJUSTMENTS", JSON.stringify(adjustments));
                 localStorage.setItem("MS_ACTIVITIES", JSON.stringify(activities));
@@ -1888,13 +1961,14 @@
                 sales = JSON.parse(localStorage.getItem("MS_SALES") || "[]");
                 purchases = JSON.parse(localStorage.getItem("MS_PURCHASES") || "[]");
                 payments = JSON.parse(localStorage.getItem("MS_PAYMENTS") || "[]");
+                supplierPayments = JSON.parse(localStorage.getItem("MS_SUPPLIER_PAYMENTS") || "[]");
                 returns = JSON.parse(localStorage.getItem("MS_RETURNS") || "[]");
                 adjustments = JSON.parse(localStorage.getItem("MS_ADJUSTMENTS") || "[]");
                 activities = JSON.parse(localStorage.getItem("MS_ACTIVITIES") || "[]");
             } catch (e) {
                 console.warn("localStorage load failed", e);
                 medicines = []; clients = []; sales = []; purchases = [];
-                payments = []; returns = []; adjustments = []; activities = [];
+                payments = []; supplierPayments = []; returns = []; adjustments = []; activities = [];
             }
         }
 
@@ -1911,6 +1985,7 @@
                 sales: Array.isArray(sales) ? sales : [],
                 purchases: Array.isArray(purchases) ? purchases : [],
                 payments: Array.isArray(payments) ? payments : [],
+                supplierPayments: Array.isArray(supplierPayments) ? supplierPayments : [],
                 returns: Array.isArray(returns) ? returns : [],
                 adjustments: Array.isArray(adjustments) ? adjustments : [],
                 activities: Array.isArray(activities) ? activities : [],
@@ -1968,6 +2043,7 @@
                             sales = Array.isArray(data.sales) ? data.sales : [];
                             purchases = Array.isArray(data.purchases) ? data.purchases : [];
                             payments = Array.isArray(data.payments) ? data.payments : [];
+                            supplierPayments = Array.isArray(data.supplierPayments) ? data.supplierPayments : [];
                             returns = Array.isArray(data.returns) ? data.returns : [];
                             adjustments = Array.isArray(data.adjustments) ? data.adjustments : [];
                             activities = Array.isArray(data.activities) ? data.activities : [];
@@ -2060,14 +2136,33 @@
         }
 
         function getSupplierBaki(supplierName) {
-            const name = String(supplierName || "").toLowerCase();
+            const name = String(supplierName || "").toLowerCase().trim();
+            if (!name) return 0;
             let total = 0;
             purchases.forEach(p => {
-                if (String(p.supplier || "").toLowerCase() === name) {
+                if (String(p.supplier || "").toLowerCase().trim() === name) {
                     total += (Number(p.total) || 0) - (Number(p.paid) || 0);
                 }
             });
+            (supplierPayments || []).forEach(sp => {
+                if (String(sp.supplier || "").toLowerCase().trim() === name) {
+                    total -= Number(sp.amount) || 0;
+                }
+            });
             return Math.max(0, total);
+        }
+
+        function getAllSupplierNames() {
+            const set = new Set();
+            purchases.forEach(p => {
+                const n = (p.supplier || "").trim();
+                if (n) set.add(n);
+            });
+            (supplierPayments || []).forEach(sp => {
+                const n = (sp.supplier || "").trim();
+                if (n) set.add(n);
+            });
+            return Array.from(set).sort((a, b) => a.localeCompare(b));
         }
 
         function getExpiring(days = 60) {
@@ -2318,11 +2413,29 @@
         // PURCHASE
         // ============================================================
 
+        function onPurchaseSupplierPick() {
+            const name = (document.getElementById("purchaseSupplier")?.value || "").trim();
+            if (!name) return;
+            const gstEl = document.getElementById("purchaseGstin");
+            if (!gstEl) return;
+            // Only auto-fill GSTIN if field empty or matches known supplier
+            const prof = typeof getSupplierProfile === "function" ? getSupplierProfile(name) : null;
+            if (prof && prof.gstin) {
+                gstEl.value = prof.gstin;
+            }
+        }
+
+        function fillPurchaseSupplierList() {
+            const dl = document.getElementById("purchaseSupplierList");
+            if (!dl) return;
+            const names = (typeof getAllSupplierNames === "function") ? getAllSupplierNames() : [];
+            dl.innerHTML = names.map(n => `<option value="${escapeHTML(n)}"></option>`).join("");
+        }
+
         function openPurchaseModal() {
-            const sel = document.getElementById("purchaseMedicine");
-            sel.innerHTML = medicines.map(m =>
-                `<option value="${m.id}">${escapeHTML(m.name)} | Stock ${m.stock}</option>`
-            ).join("");
+            if (typeof togglePurchaseNewMed === "function") togglePurchaseNewMed(false);
+            refreshPurchaseMedicineSelect();
+            fillPurchaseSupplierList();
             document.getElementById("purchaseSupplier").value = "";
             document.getElementById("purchaseBillNo").value = "";
             const g = document.getElementById("purchaseGstin"); if (g) g.value = "";
@@ -2349,10 +2462,83 @@
             document.getElementById("purchaseCost").oninput = upd;
         }
 
+        function togglePurchaseNewMed(force) {
+            const box = document.getElementById("purchaseNewMedBox");
+            if (!box) return;
+            const show = force === false ? false : (force === true ? true : box.style.display === "none");
+            box.style.display = show ? "block" : "none";
+            if (show) {
+                document.getElementById("pNewMedName").value = "";
+                document.getElementById("pNewMedCompany").value = "";
+                document.getElementById("pNewMedMrp").value = "";
+                document.getElementById("pNewMedUnit").value = "Pcs";
+                document.getElementById("pNewMedHsn").value = "3004";
+                document.getElementById("pNewMedMin").value = "10";
+                document.getElementById("pNewMedName").focus();
+            }
+        }
+
+        function addNewMedicineFromPurchase() {
+            const name = (document.getElementById("pNewMedName").value || "").trim();
+            if (!name) { alert("Medicine name required"); return; }
+            const company = (document.getElementById("pNewMedCompany").value || "").trim();
+            const mrp = Number(document.getElementById("pNewMedMrp").value) || 0;
+            const unit = (document.getElementById("pNewMedUnit").value || "Pcs").trim();
+            const hsn = (document.getElementById("pNewMedHsn").value || "3004").trim();
+            const minStock = Number(document.getElementById("pNewMedMin").value) || 10;
+            // Cost from purchase form if already typed
+            const cost = Number(document.getElementById("purchaseCost").value) || 0;
+            const batch = (document.getElementById("purchaseBatch").value || "").trim();
+            const expiry = document.getElementById("purchaseExpiry").value || "";
+
+            // Avoid exact duplicate name (case-insensitive)
+            const exists = medicines.find(m => String(m.name || "").toLowerCase() === name.toLowerCase());
+            if (exists) {
+                if (!confirm("Yeh medicine pehle se hai: " + exists.name + "\nUsi ko select karun?")) return;
+                refreshPurchaseMedicineSelect(exists.id);
+                togglePurchaseNewMed(false);
+                toast("Existing medicine selected");
+                return;
+            }
+
+            const med = {
+                id: uid(),
+                name: name,
+                company: company,
+                batch: batch,
+                expiry: expiry,
+                cost: cost,
+                rate: cost > 0 ? sellRateFor({ cost: cost }) : 0,
+                mrp: mrp,
+                stock: 0,
+                minStock: minStock,
+                unit: unit,
+                hsn: hsn
+            };
+            medicines.push(med);
+            addActivity("Added medicine", name + " (from purchase)");
+            saveDB();
+            refreshPurchaseMedicineSelect(med.id);
+            togglePurchaseNewMed(false);
+            if (typeof renderMedicines === "function") renderMedicines();
+            toast("Naya medicine add ho gaya — ab qty/cost bharo");
+        }
+
+        function refreshPurchaseMedicineSelect(selectId) {
+            const sel = document.getElementById("purchaseMedicine");
+            if (!sel) return;
+            sel.innerHTML = medicines
+                .slice()
+                .sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")))
+                .map(m => `<option value="${m.id}">${escapeHTML(m.name)} | Stock ${m.stock ?? 0}</option>`)
+                .join("");
+            if (selectId) sel.value = String(selectId);
+        }
+
         function savePurchase() {
             const id = document.getElementById("purchaseMedicine").value;
             const m = medicines.find(x => String(x.id) === String(id));
-            if (!m) return alert("Select a medicine");
+            if (!m) return alert("Select a medicine — ya pehle + New Medicine se add karo");
             const supplier = document.getElementById("purchaseSupplier").value.trim();
             if (!supplier) return alert("Supplier name required");
             const qty = Number(document.getElementById("purchaseQty").value);
@@ -2439,11 +2625,260 @@
         }
 
         function showSupplierDues() {
-            showSection("reports", document.querySelector(".nav button:nth-child(9)"));
+            showSection("purchase", document.querySelector('.nav button[onclick*="purchase"]') || document.querySelector(".nav button:nth-child(3)"));
             setTimeout(() => {
-                const el = document.getElementById("supplierDuesReport");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-            }, 200);
+                document.getElementById("supListFilter").value = "dues";
+                renderSuppliers();
+            }, 100);
+        }
+
+        function renderSuppliers() {
+            const el = document.getElementById("suppliersList");
+            if (!el) return;
+            const q = (document.getElementById("supListSearch")?.value || "").toLowerCase().trim();
+            const filter = document.getElementById("supListFilter")?.value || "all";
+
+            let names = getAllSupplierNames();
+            if (q) names = names.filter(n => n.toLowerCase().includes(q));
+
+            const rows = names.map(name => {
+                const baki = getSupplierBaki(name);
+                const purCount = purchases.filter(p => String(p.supplier || "").toLowerCase().trim() === name.toLowerCase()).length;
+                return { name, baki, purCount };
+            });
+
+            let list = rows;
+            if (filter === "dues") list = rows.filter(r => r.baki > 0);
+            else if (filter === "clear") list = rows.filter(r => r.baki <= 0);
+            list.sort((a, b) => b.baki - a.baki || a.name.localeCompare(b.name));
+
+            // stats
+            const allNames = getAllSupplierNames();
+            let dueCount = 0, totalBaki = 0;
+            allNames.forEach(n => {
+                const b = getSupplierBaki(n);
+                if (b > 0) { dueCount++; totalBaki += b; }
+            });
+            const elC = document.getElementById("supTotalCount");
+            const elD = document.getElementById("supDueCount");
+            const elB = document.getElementById("supTotalBaki");
+            const elP = document.getElementById("supPurchaseCount");
+            if (elC) elC.textContent = allNames.length;
+            if (elD) elD.textContent = dueCount;
+            if (elB) elB.textContent = money(totalBaki);
+            if (elP) elP.textContent = purchases.length;
+
+            if (!list.length) {
+                el.innerHTML = `<div class="empty">${filter === "dues" ? "Koi supplier baki nahi" : "Koi supplier nahi — pehle purchase entry karo"}</div>`;
+                return;
+            }
+
+            el.innerHTML = list.map(r => {
+                const safe = String(r.name).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+                const bakiClass = r.baki > 0 ? "positive" : "zero";
+                const bakiLabel = r.baki > 0 ? ("Baki: " + money(r.baki)) : "Clear";
+                return `
+                <div class="client-card-wrapper">
+                    <div class="client-card" onclick="toggleSupplierMenu('${safe}', event)">
+                        <div class="client-info">
+                            <div class="name">🏭 ${escapeHTML(r.name)}</div>
+                            <div class="meta">Purchases: ${r.purCount}</div>
+                            <div class="meta"><span class="baki-amount ${bakiClass}">${bakiLabel}</span></div>
+                        </div>
+                        <div class="dropdown-arrow">▼</div>
+                    </div>
+                    <div class="client-dropdown" id="sup_dropdown_${safe.replace(/[^a-zA-Z0-9]/g,'_')}">
+                        <div class="dropdown-item primary" onclick="event.stopPropagation();closeAllDropdowns();viewSupplierHistory('${safe}')">
+                            <span class="icon">📋</span> Full History
+                        </div>
+                        <div class="dropdown-item" onclick="event.stopPropagation();closeAllDropdowns();openSupplierPaymentModal('${safe}')">
+                            <span class="icon">💰</span> Pay Supplier
+                        </div>
+                        <div class="dropdown-item" onclick="event.stopPropagation();closeAllDropdowns();printSupplierStatement('${safe}')">
+                            <span class="icon">🖨️</span> Print Statement
+                        </div>
+                        <div class="dropdown-item" onclick="event.stopPropagation();closeAllDropdowns();openPurchaseModalForSupplier('${safe}')">
+                            <span class="icon">📦</span> New Purchase
+                        </div>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        function toggleSupplierMenu(name, event) {
+            if (event) event.stopPropagation();
+            const id = "sup_dropdown_" + String(name).replace(/[^a-zA-Z0-9]/g, "_");
+            const dd = document.getElementById(id);
+            const wasOpen = dd && dd.classList.contains("open");
+            closeAllDropdowns();
+            if (dd && !wasOpen) dd.classList.add("open");
+        }
+
+        function openPurchaseModalForSupplier(name) {
+            openPurchaseModal();
+            setTimeout(() => {
+                const el = document.getElementById("purchaseSupplier");
+                if (el) el.value = name;
+            }, 50);
+        }
+
+        function openSupplierPaymentModal(name) {
+            const baki = getSupplierBaki(name);
+            document.getElementById("supPayName").value = name;
+            document.getElementById("supPayAmount").value = "";
+            document.getElementById("supPayNote").value = "";
+            document.getElementById("supPayInfo").innerHTML =
+                `<b>🏭 ${escapeHTML(name)}</b><br>Current Baki: <strong class="baki">${money(baki)}</strong>`;
+            document.getElementById("supplierPaymentModal").classList.add("show");
+        }
+
+        function saveSupplierPayment() {
+            const name = document.getElementById("supPayName").value.trim();
+            const amount = Number(document.getElementById("supPayAmount").value);
+            const note = (document.getElementById("supPayNote").value || "").trim();
+            if (!name) { alert("Supplier missing"); return; }
+            if (!(amount > 0)) { alert("Valid amount daalo"); return; }
+            if (!Array.isArray(supplierPayments)) supplierPayments = [];
+            supplierPayments.push({
+                id: uid(),
+                supplier: name,
+                amount: amount,
+                note: note,
+                date: new Date().toISOString()
+            });
+            addActivity("Supplier payment", name + " ₹" + amount);
+            saveDB();
+            closeModal("supplierPaymentModal");
+            renderSuppliers();
+            renderPurchases();
+            if (typeof renderSupplierDuesReport === "function") renderSupplierDuesReport();
+            toast("Supplier payment saved");
+        }
+
+        function viewSupplierHistory(name) {
+            const nm = String(name || "").toLowerCase().trim();
+            const purList = purchases
+                .filter(p => String(p.supplier || "").toLowerCase().trim() === nm)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            const payList = (supplierPayments || [])
+                .filter(sp => String(sp.supplier || "").toLowerCase().trim() === nm)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const totalPurchase = purList.reduce((a, p) => a + (Number(p.total) || 0), 0);
+            const totalPaidOnBill = purList.reduce((a, p) => a + (Number(p.paid) || 0), 0);
+            const totalExtraPay = payList.reduce((a, p) => a + (Number(p.amount) || 0), 0);
+            const currentBaki = getSupplierBaki(name);
+
+            let html = `
+                <div class="card" style="margin-bottom:14px;">
+                    <div class="flex-between" style="flex-wrap:wrap;gap:8px;">
+                        <div>
+                            <h3 style="margin:0 0 4px 0;">🏭 ${escapeHTML(name)}</h3>
+                            <div class="text-muted text-sm">Supplier Ledger</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="text-sm text-muted">Current Baki</div>
+                            <div style="font-size:24px;font-weight:800;" class="baki">${money(currentBaki)}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-4" style="margin-top:12px;">
+                        <div class="stat" style="padding:10px;"><div class="label">Purchases</div><div class="value" style="font-size:16px;">${purList.length}</div></div>
+                        <div class="stat" style="padding:10px;"><div class="label">Total Purchase</div><div class="value" style="font-size:16px;">${money(totalPurchase)}</div></div>
+                        <div class="stat" style="padding:10px;"><div class="label">Paid (bills+extra)</div><div class="value green" style="font-size:16px;">${money(totalPaidOnBill + totalExtraPay)}</div></div>
+                        <div class="stat" style="padding:10px;"><div class="label">Baki</div><div class="value red" style="font-size:16px;">${money(currentBaki)}</div></div>
+                    </div>
+                    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="closeModal('supplierDetailModal');openSupplierPaymentModal('${String(name).replace(/'/g,"\\'")}')">💰 Pay</button>
+                        <button class="btn btn-secondary btn-sm" onclick="closeModal('supplierDetailModal');printSupplierStatement('${String(name).replace(/'/g,"\\'")}')">🖨️ Statement</button>
+                        <button class="btn btn-secondary btn-sm" onclick="closeModal('supplierDetailModal');openPurchaseModalForSupplier('${String(name).replace(/'/g,"\\'")}')">📦 Purchase</button>
+                    </div>
+                </div>`;
+
+            html += `<div class="card" style="margin-bottom:12px;"><div class="card-title">📦 Purchase Bills (${purList.length})</div>`;
+            if (!purList.length) {
+                html += `<div class="empty">No purchases</div>`;
+            } else {
+                html += `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Bill</th><th>Medicine</th><th>Qty</th><th>Total</th><th>Paid</th></tr></thead><tbody>`;
+                purList.slice(0, 50).forEach(p => {
+                    html += `<tr>
+                        <td>${new Date(p.date).toLocaleDateString("en-IN")}</td>
+                        <td>${escapeHTML(p.billNo || "-")}</td>
+                        <td>${escapeHTML(p.name || "-")}</td>
+                        <td>${p.qty || 0}</td>
+                        <td>${money(p.total)}</td>
+                        <td class="paid">${money(p.paid || 0)}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+            html += `</div>`;
+
+            html += `<div class="card"><div class="card-title">💰 Payments Made (${payList.length})</div>`;
+            if (!payList.length) {
+                html += `<div class="empty">No extra payments yet</div>`;
+            } else {
+                html += `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Amount</th><th>Note</th><th></th></tr></thead><tbody>`;
+                payList.forEach(sp => {
+                    const idStr = String(sp.id).replace(/'/g, "\\'");
+                    html += `<tr>
+                        <td>${new Date(sp.date).toLocaleString("en-IN")}</td>
+                        <td class="paid"><b>${money(sp.amount)}</b></td>
+                        <td>${escapeHTML(sp.note || "-")}</td>
+                        <td><button class="btn btn-xs btn-danger" onclick="deleteSupplierPayment('${idStr}','${String(name).replace(/'/g,"\\'")}')">Del</button></td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+            html += `</div>`;
+
+            document.getElementById("supplierDetailTitle").textContent = "🏭 " + name;
+            document.getElementById("supplierDetailContent").innerHTML = html;
+            document.getElementById("supplierDetailModal").classList.add("show");
+        }
+
+        function deleteSupplierPayment(id, name) {
+            if (!confirm("Delete this payment?")) return;
+            supplierPayments = (supplierPayments || []).filter(p => String(p.id) !== String(id));
+            saveDB();
+            toast("Payment deleted");
+            viewSupplierHistory(name);
+            renderSuppliers();
+        }
+
+        function printSupplierStatement(name) {
+            const nm = String(name || "").toLowerCase().trim();
+            const purList = purchases
+                .filter(p => String(p.supplier || "").toLowerCase().trim() === nm)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+            const payList = (supplierPayments || [])
+                .filter(sp => String(sp.supplier || "").toLowerCase().trim() === nm)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+            const totalPurchase = purList.reduce((a, p) => a + (Number(p.total) || 0), 0);
+            const totalPaidOnBill = purList.reduce((a, p) => a + (Number(p.paid) || 0), 0);
+            const totalExtraPay = payList.reduce((a, p) => a + (Number(p.amount) || 0), 0);
+            const baki = getSupplierBaki(name);
+
+            let billRows = purList.map(p =>
+                `<tr><td>${new Date(p.date).toLocaleDateString("en-IN")}</td><td>${escapeHTML(p.billNo || "-")}</td>
+                <td>${escapeHTML(p.name || "-")}</td><td>${p.qty || 0}</td>
+                <td class="right">${money(p.total)}</td><td class="right paid">${money(p.paid || 0)}</td></tr>`
+            ).join("") || `<tr><td colspan="6">No purchases</td></tr>`;
+
+            let payRows = payList.map(p =>
+                `<tr><td>${new Date(p.date).toLocaleDateString("en-IN")}</td><td>Payment</td>
+                <td class="right paid">${money(p.amount)}</td><td>${escapeHTML(p.note || "")}</td></tr>`
+            ).join("");
+
+            openPrintWindow("Supplier Statement",
+                `<h2>🏭 Supplier Statement / Ledger</h2>
+                <p><b>${escapeHTML(name)}</b></p>
+                <p class="total">Current Outstanding Baki: <span class="baki">${money(baki)}</span></p>
+                <p>Total Purchase: ${money(totalPurchase)} | Paid on bills: ${money(totalPaidOnBill)} | Extra payments: ${money(totalExtraPay)}</p>
+                <h2>Purchases</h2>
+                <table><thead><tr><th>Date</th><th>Bill No</th><th>Medicine</th><th>Qty</th><th>Total</th><th>Paid</th></tr></thead>
+                <tbody>${billRows}</tbody></table>
+                ${payRows ? `<h2>Payments</h2><table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Note</th></tr></thead><tbody>${payRows}</tbody></table>` : ""}
+                `);
         }
 
         // ============================================================
@@ -2452,16 +2887,75 @@
 
         let scannedItems = [];
 
+        function getSupplierProfile(name) {
+            const nm = String(name || "").toLowerCase().trim();
+            if (!nm) return { name: "", gstin: "" };
+            // Latest purchase with this supplier (for GSTIN etc.)
+            const list = purchases
+                .filter(p => String(p.supplier || "").toLowerCase().trim() === nm)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            const last = list[0] || {};
+            return {
+                name: name,
+                gstin: last.gstin || ""
+            };
+        }
+
+        function fillScanSupplierDropdown() {
+            const sel = document.getElementById("scanSupplierSelect");
+            if (!sel) return;
+            const names = (typeof getAllSupplierNames === "function") ? getAllSupplierNames() : [];
+            let html = `<option value="">— Select old supplier —</option>`;
+            html += `<option value="__new__">➕ New Supplier</option>`;
+            names.forEach(n => {
+                const baki = typeof getSupplierBaki === "function" ? getSupplierBaki(n) : 0;
+                const label = baki > 0 ? `${n} (Baki ${money(baki)})` : n;
+                html += `<option value="${escapeHTML(n)}">${escapeHTML(label)}</option>`;
+            });
+            sel.innerHTML = html;
+            sel.value = "";
+        }
+
+        function onScanSupplierSelect() {
+            const sel = document.getElementById("scanSupplierSelect");
+            const val = sel ? sel.value : "";
+            const nameEl = document.getElementById("scanSupplier");
+            const gstEl = document.getElementById("scanGstin");
+            if (!val) {
+                if (nameEl) nameEl.value = "";
+                if (gstEl) gstEl.value = "";
+                if (nameEl) nameEl.readOnly = false;
+                return;
+            }
+            if (val === "__new__") {
+                if (nameEl) {
+                    nameEl.value = "";
+                    nameEl.readOnly = false;
+                    nameEl.focus();
+                }
+                if (gstEl) gstEl.value = "";
+                return;
+            }
+            const prof = getSupplierProfile(val);
+            if (nameEl) {
+                nameEl.value = prof.name;
+                nameEl.readOnly = true; // old supplier — name lock
+            }
+            if (gstEl) gstEl.value = prof.gstin || "";
+        }
+
         function openScanBillModal() {
             scannedItems = [];
+            fillScanSupplierDropdown();
             document.getElementById("scanSupplier").value = "";
+            document.getElementById("scanSupplier").readOnly = false;
             document.getElementById("scanBillNo").value = "";
             const sg = document.getElementById("scanGstin"); if (sg) sg.value = "";
             const sbt = document.getElementById("scanBillTotal"); if (sbt) sbt.value = "";
             document.getElementById("scanFile").value = "";
             const paste = document.getElementById("scanPasteText");
             if (paste) paste.value = "";
-            document.getElementById("scanStatus").textContent = "Google Lens text paste karo (best) ya photo choose karo (free OCR)";
+            document.getElementById("scanStatus").textContent = "Purana supplier select karo (auto-fill) ya New Supplier type karo";
             document.getElementById("scanPreview").innerHTML = "";
             document.getElementById("scanItemsTable").innerHTML = `<tr><td colspan="8" class="empty">Scan / paste ke baad items yahan aayenge</td></tr>`;
             document.getElementById("scanBillModal").classList.add("show");
@@ -5083,23 +5577,35 @@ Rules:
         function renderSupplierDuesReport() {
             const el = document.getElementById("supplierDuesReport");
             if (!el) return;
-            const map = {};
-            purchases.forEach(p => {
-                const key = (p.supplier || "Unknown").trim() || "Unknown";
-                if (!map[key]) map[key] = { total: 0, paid: 0 };
-                map[key].total += Number(p.total) || 0;
-                map[key].paid += Number(p.paid) || 0;
-            });
-            const rows = Object.entries(map).map(([name, v]) => ({
-                name, total: v.total, paid: v.paid, baki: Math.max(0, v.total - v.paid)
-            })).filter(r => r.baki > 0).sort((a, b) => b.baki - a.baki);
+            const names = getAllSupplierNames();
+            const rows = names.map(name => {
+                const purList = purchases.filter(p => String(p.supplier || "").toLowerCase().trim() === name.toLowerCase());
+                const total = purList.reduce((a, p) => a + (Number(p.total) || 0), 0);
+                const paidBills = purList.reduce((a, p) => a + (Number(p.paid) || 0), 0);
+                const paidExtra = (supplierPayments || []).filter(sp => String(sp.supplier || "").toLowerCase().trim() === name.toLowerCase())
+                    .reduce((a, sp) => a + (Number(sp.amount) || 0), 0);
+                return { name, total, paid: paidBills + paidExtra, baki: getSupplierBaki(name) };
+            }).filter(r => r.baki > 0).sort((a, b) => b.baki - a.baki);
 
             if (!rows.length) {
                 el.innerHTML = `<div class="empty">Supplier ko koi pending nahi</div>`;
                 return;
             }
-            el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Supplier</th><th>Purchase</th><th>Paid</th><th>Baki</th></tr></thead><tbody>` +
-                rows.map(r => `<tr><td><b>${escapeHTML(r.name)}</b></td><td>${money(r.total)}</td><td class="paid">${money(r.paid)}</td><td class="baki"><b>${money(r.baki)}</b></td></tr>`).join("") +
+            el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Supplier</th><th>Purchase</th><th>Paid</th><th>Baki</th><th></th></tr></thead><tbody>` +
+                rows.map(r => {
+                    const safe = String(r.name).replace(/'/g, "\\'");
+                    return `<tr>
+                        <td><b>${escapeHTML(r.name)}</b></td>
+                        <td>${money(r.total)}</td>
+                        <td class="paid">${money(r.paid)}</td>
+                        <td class="baki"><b>${money(r.baki)}</b></td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn btn-xs btn-primary" onclick="openSupplierPaymentModal('${safe}')">Pay</button>
+                            <button class="btn btn-xs btn-secondary" onclick="viewSupplierHistory('${safe}')">History</button>
+                            <button class="btn btn-xs btn-secondary" onclick="printSupplierStatement('${safe}')">Print</button>
+                        </td>
+                    </tr>`;
+                }).join("") +
                 `</tbody></table></div>`;
         }
 
@@ -5251,6 +5757,7 @@ Rules:
                 sales,
                 purchases,
                 payments,
+                supplierPayments,
                 returns,
                 adjustments,
                 activities
@@ -5277,6 +5784,7 @@ Rules:
                     sales = data.sales || [];
                     purchases = data.purchases || [];
                     payments = data.payments || [];
+                    supplierPayments = data.supplierPayments || [];
                     returns = data.returns || [];
                     adjustments = data.adjustments || [];
                     activities = data.activities || [];
@@ -5299,6 +5807,7 @@ Rules:
             sales = [];
             purchases = [];
             payments = [];
+            supplierPayments = [];
             returns = [];
             adjustments = [];
             activities = [];
@@ -5343,6 +5852,7 @@ Rules:
                 Sales: <b>${sales.length}</b><br>
                 Purchases: <b>${purchases.length}</b><br>
                 Payments: <b>${payments.length}</b><br>
+                Supplier Payments: <b>${(supplierPayments||[]).length}</b><br>
                 Returns: <b>${returns.length}</b><br>
                 Adjustments: <b>${adjustments.length}</b><br>
                 Activities: <b>${activities.length}</b>
@@ -5381,6 +5891,7 @@ Rules:
             renderDashboard();
             renderMedicines();
             renderPurchases();
+            if (typeof renderSuppliers === "function") renderSuppliers();
             renderReturns();
             renderClients();
             renderAlerts();
@@ -5457,6 +5968,7 @@ Rules:
                         sales = Array.isArray(data.sales) ? data.sales : [];
                         purchases = Array.isArray(data.purchases) ? data.purchases : [];
                         payments = Array.isArray(data.payments) ? data.payments : [];
+                        supplierPayments = Array.isArray(data.supplierPayments) ? data.supplierPayments : [];
                         returns = Array.isArray(data.returns) ? data.returns : [];
                         adjustments = Array.isArray(data.adjustments) ? data.adjustments : [];
                         activities = Array.isArray(data.activities) ? data.activities : [];
