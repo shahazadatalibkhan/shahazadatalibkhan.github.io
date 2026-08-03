@@ -1282,7 +1282,7 @@
             <div class="grid grid-4">
                 <div class="stat"><div class="label">💊 Total Medicines</div><div id="dMedicines" class="value">0</div></div>
                 <div class="stat"><div class="label">📦 Total Stock Units</div><div id="dStock" class="value">0</div></div>
-                <div class="stat"><div class="label">💰 Stock Value</div><div id="dStockValue" class="value green">₹0</div></div>
+                <div class="stat"><div class="label">💰 Stock Value (incl 5% GST)</div><div id="dStockValue" class="value green">₹0</div></div>
                 <div class="stat"><div class="label">⚠️ Low Stock</div><div id="dLow" class="value red">0</div></div>
                 <div class="stat"><div class="label">⏰ Expiring Soon</div><div id="dExpiry" class="value gold">0</div></div>
                 <div class="stat"><div class="label">📈 Today's Sales</div><div id="dTodaySales" class="value green">₹0</div></div>
@@ -5263,7 +5263,8 @@ Rules:
             let profit = 0;
             todaySales.forEach(s => { s.items.forEach(i => { profit += (i.rate - i.cost) * i.qty; }); });
             const stockUnits = medicines.reduce((a, m) => a + Number(m.stock || 0), 0);
-            const stockValue = medicines.reduce((a, m) => a + (Number(m.stock || 0) * Number(m.cost || 0)), 0);
+            // Stock value with 5% GST (matches purchase bill style)
+            const stockValue = medicines.reduce((a, m) => a + (Number(m.stock || 0) * Number(m.cost || 0) * 1.05), 0);
             const low = medicines.filter(m => m.stock <= m.minStock).length;
             const expiry = getExpiring().length;
             const baki = clients.reduce((a, c) => a + getClientBaki(c.id), 0);
