@@ -5050,10 +5050,18 @@ Rules:
             let html = "";
             list.forEach(m => {
                 const stockClass = m.stock <= 0 ? 'badge-red' : m.stock <= m.minStock ? 'badge-yellow' : 'badge-green';
-                html += `<div class="result-item" onclick="addToBill('${m.id}')">
+                const rate = resolveBillRate(m, selectedClientId);
+                const isParty = getPartyRate(selectedClientId, m) != null;
+                const idSafe = String(m.id).replace(/'/g, "\\'");
+                html += `<div class="result-item" style="cursor:default;">
                     <div class="name">${escapeHTML(m.name)}</div>
-                    <div class="meta">${escapeHTML(m.company)} • Batch: ${escapeHTML(m.batch)} • Stock: <span class="badge ${stockClass}">${m.stock}</span> ${m.unit}</div>
-                    <div class="meta">Cost: ${money(m.cost)} → Sell: <b>${money(sellRateFor(m))}</b> • MRP: ${money(m.mrp)} • Exp: ${m.expiry||'-'}</div>
+                    <div class="meta">${escapeHTML(m.company || "")} • Batch: ${escapeHTML(m.batch || "")} • Stock: <span class="badge ${stockClass}">${m.stock}</span> ${escapeHTML(m.unit || "")}</div>
+                    <div class="meta">MRP: ${money(m.mrp)} • Rate: <b>${money(rate)}</b>${isParty ? ' <span class="badge badge-green">Party rate</span>' : ' <span class="badge badge-yellow">Default</span>'} • Exp: ${escapeHTML(m.expiry||'-')}</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                        <label style="font-size:12px;font-weight:700;">Qty</label>
+                        <input type="number" min="1" step="1" value="1" id="billPickQty_${idSafe}" style="width:72px;padding:8px;border-radius:8px;border:1px solid var(--border,#ddd);font-size:15px;font-weight:700;" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault();addToBillQty('${idSafe}');}">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="event.stopPropagation();addToBillQty('${idSafe}')">➕ Add</button>
+                    </div>
                 </div>`;
             });
 
@@ -5095,6 +5103,51 @@ Rules:
             return markup;
         }
 
+        // Per Client / Grahak custom rates (name-key). New party = default sellRateFor
+        function partyRateKey(m) {
+            return String((m && m.name) || m || "").toLowerCase().trim();
+        }
+
+        function getSelectedParty() {
+            if (!selectedClientId) return null;
+            return clients.find(c => String(c.id) === String(selectedClientId)) || null;
+        }
+
+        function getPartyRate(clientId, m) {
+            if (!clientId || !m) return null;
+            const c = clients.find(x => String(x.id) === String(clientId));
+            if (!c || !c.rates || typeof c.rates !== "object") return null;
+            const k = partyRateKey(m);
+            if (c.rates[k] != null && c.rates[k] !== "" && Number(c.rates[k]) > 0) {
+                return Math.round(Number(c.rates[k]) * 100) / 100;
+            }
+            if (c.rates[String(m.id)] != null && Number(c.rates[String(m.id)]) > 0) {
+                return Math.round(Number(c.rates[String(m.id)]) * 100) / 100;
+            }
+            return null;
+        }
+
+        function resolveBillRate(m, clientId) {
+            const party = getPartyRate(clientId || selectedClientId, m);
+            if (party != null) return party;
+            return sellRateFor(m);
+        }
+
+        function setPartyRate(clientId, m, rate) {
+            if (!clientId) return false;
+            const c = clients.find(x => String(x.id) === String(clientId));
+            if (!c) return false;
+            if (!c.rates || typeof c.rates !== "object") c.rates = {};
+            const k = partyRateKey(m);
+            const r = Math.round(Number(rate) * 100) / 100;
+            if (!r || r <= 0) {
+                delete c.rates[k];
+            } else {
+                c.rates[k] = r;
+            }
+            saveDB();
+            return true;
+        }
 
         function isUnitLikePack(p) {
             const s = String(p || "").trim().toLowerCase();
@@ -5118,27 +5171,44 @@ Rules:
         }
 
         function addToBill(id) {
+            addToBillQty(id, 1);
+        }
+
+        function addToBillQty(id, qtyOverride) {
             let m = medicines.find(x => String(x.id) === String(id));
             if (!m) { toast("Medicine not found", "error"); return; }
-            // FEFO: same name ke batches me pehle expiry wala
+            let qty = qtyOverride;
+            if (qty == null || qty === "") {
+                const inp = document.getElementById("billPickQty_" + id);
+                qty = inp ? Number(inp.value) : 1;
+            }
+            qty = Math.floor(Number(qty) || 0);
+            if (qty <= 0) { toast("Qty 1 se kam nahi", "error"); return; }
+
+            // FEFO: enough stock batch
             if (typeof pickFefoMedicine === "function") {
-                const fefo = pickFefoMedicine(m.name, 1);
+                const fefo = pickFefoMedicine(m.name, qty);
                 if (fefo) m = fefo;
             }
             if (Number(m.stock) <= 0) { toast("Out of stock: " + m.name, "error"); return; }
+            if (qty > Number(m.stock)) {
+                toast("Stock sirf " + m.stock + " hai — qty adjust", "error");
+                qty = Number(m.stock);
+            }
 
             const cost = Number(m.cost) || 0;
-            const sellRate = sellRateFor(m);
+            const sellRate = resolveBillRate(m, selectedClientId);
             const existing = currentBill.find(x => String(x.id) === String(m.id));
             if (existing) {
-                if (existing.qty < Number(m.stock)) {
-                    existing.qty++;
-                    existing.rate = sellRate;
-                    existing.cost = cost;
-                    toast(m.name + " [" + (m.batch || "-") + "] x" + existing.qty + " @ ₹" + sellRate);
+                const newQty = (Number(existing.qty) || 0) + qty;
+                if (newQty > Number(m.stock)) {
+                    toast("Stock limit: " + m.stock, "error");
+                    existing.qty = Number(m.stock);
                 } else {
-                    toast("Not enough stock for batch " + (m.batch || ""), "error");
+                    existing.qty = newQty;
                 }
+                // keep existing rate if already on bill; party rate only on first add
+                toast(m.name + " qty = " + existing.qty);
             } else {
                 currentBill.push({
                     id: m.id,
@@ -5153,14 +5223,14 @@ Rules:
                     cost: cost,
                     rate: sellRate,
                     unit: m.unit || "Tablet",
-                    qty: 1,
+                    qty: qty,
                     freeQty: 0,
                     discPercent: 0,
                     gstPercent: 5
                 });
-                toast(m.name + " [" + (m.batch || "FEFO") + "] Cost ₹" + cost + " → Sell ₹" + sellRate);
+                const party = getPartyRate(selectedClientId, m) != null;
+                toast(m.name + " × " + qty + " @ ₹" + sellRate + (party ? " (party rate)" : " (default)"));
             }
-
             renderBill();
             searchBillMedicine();
         }
@@ -5229,7 +5299,15 @@ Rules:
         function changeBillRate(id, val) {
             const item = currentBill.find(x => String(x.id) === String(id));
             if (!item) return;
-            item.rate = Math.round(Math.max(0, Number(val) || 0) * 100) / 100;
+            const r = Math.round((Number(val) || 0) * 100) / 100;
+            if (r <= 0) { toast("Rate invalid", "error"); renderBill(); return; }
+            item.rate = r;
+            // Save as this Client/Grahak special rate
+            if (selectedClientId) {
+                setPartyRate(selectedClientId, item, r);
+                const c = getSelectedParty();
+                toast("Rate ₹" + r + " saved for " + ((c && c.name) || "party") + " — " + item.name);
+            }
             renderBill();
         }
 
@@ -5429,8 +5507,15 @@ Rules:
             isDiscountManual = false;
             document.getElementById("billDiscount").value = "0.00";
             document.getElementById("billPaid").value = 0;
+            // Apply this party special rates on items already in bill
+            let applied = 0;
+            (currentBill || []).forEach(item => {
+                const pr = getPartyRate(id, item);
+                if (pr != null) { item.rate = pr; applied++; }
+            });
             renderBill();
-            toast("Customer loaded: " + c.name);
+            searchBillMedicine();
+            toast("Customer: " + c.name + (applied ? (" · " + applied + " item party rate") : " · default rates"));
             const billingSection = document.getElementById('billing');
             if (billingSection && !billingSection.classList.contains('active')) {
                 const billingBtn = document.querySelector('.nav button:nth-child(4)');
@@ -5834,7 +5919,8 @@ Rules:
                 name,
                 mobile,
                 address: document.getElementById("newClientAddress").value.trim(),
-                type: type
+                type: type,
+                rates: {}
             });
             addActivity(type === "grahak" ? "Added grahak" : "Added client", name);
             saveDB();
