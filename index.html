@@ -1226,6 +1226,31 @@
             visibility: hidden !important;
             pointer-events: none !important;
         }
+
+        /* Keyboard-only usability */
+        .result-item.kb-active, .result-item:focus {
+            outline: 2px solid #0a7e5c !important;
+            background: rgba(10,126,92,0.12) !important;
+        }
+        .kbd-hint {
+            font-size: 11px;
+            color: var(--text-secondary, #666);
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(10,126,92,0.08);
+            margin: 6px 0 10px;
+            line-height: 1.45;
+        }
+        kbd {
+            font-family: ui-monospace, monospace;
+            font-size: 10px;
+            padding: 1px 5px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            background: #f4f4f4;
+            color: #222;
+        }
+        .dark kbd { background: #333; color: #eee; border-color: #555; }
     </style>
 </head>
 <body class="app-locked">
@@ -1563,7 +1588,8 @@
                     </div>
                     <div class="card mt-12">
                         <div class="card-title">💊 All Medicines (Click to Add)</div>
-                        <input id="billMedicineSearch" placeholder="🔍 Search medicine..." oninput="searchBillMedicine()">
+                        <div class="kbd-hint">⌨️ Keyboard: <kbd>/</kbd> medicine search · <kbd>↑</kbd><kbd>↓</kbd> select · <kbd>Enter</kbd> add · <kbd>Q</kbd> qty · <kbd>F2</kbd> complete bill · <kbd>F1</kbd> shortcuts · <kbd>Esc</kbd> clear</div>
+                        <input id="billMedicineSearch" placeholder="🔍 Search medicine... ( / or F3 )" oninput="searchBillMedicine()" onkeydown="handleBillMedicineKey(event)" autocomplete="off">
                         <div id="billMedicineResults" class="mt-8 medicine-results-scroll"></div>
                     </div>
                 </div>
@@ -1575,7 +1601,7 @@
                         <div class="total-row"><span>GST 5% (CGST 2.5% + SGST 2.5%)</span><b id="billGst">₹0</b></div>
                         <div class="total-row"><span>Bill Discount <span class="discount-hint auto">(extra)</span></span><input id="billDiscount" type="number" step="0.01" min="0" style="width:120px" oninput="onDiscountChange()"></div>
                         <div class="total-row big"><span>Total</span><span id="billTotal">₹0</span></div>
-                        <div class="total-row" style="font-size:12px;color:var(--text-secondary)">💡 DEVELOPER MD TALIB ANSARI</div>
+                        <div class="total-row" style="font-size:12px;color:var(--text-secondary)">💡 Marg-style: Qty×Rate − Dis% + GST% • Free qty stock se, amount me nahi</div>
                         <div class="total-row"><span>Paid</span><input id="billPaid" type="number" value="0" min="0" style="width:120px" oninput="renderBill()"></div>
                         <div class="total-row"><span>Current Baki</span><span id="billBaki" class="baki">₹0</span></div>
                         <div class="total-row"><span>Previous Baki</span><span id="billPreviousBaki">₹0</span></div>
@@ -5053,7 +5079,7 @@ Rules:
                 const rate = resolveBillRate(m, selectedClientId);
                 const isParty = getPartyRate(selectedClientId, m) != null;
                 const idSafe = String(m.id).replace(/'/g, "\\'");
-                html += `<div class="result-item" style="cursor:default;">
+                html += `<div class="result-item" tabindex="0" data-med-id="${idSafe}" role="option" style="cursor:default;" onkeydown="handleMedResultKey(event,'${idSafe}')">
                     <div class="name">${escapeHTML(m.name)}</div>
                     <div class="meta">${escapeHTML(m.company || "")} • Batch: ${escapeHTML(m.batch || "")} • Stock: <span class="badge ${stockClass}">${m.stock}</span> ${escapeHTML(m.unit || "")}</div>
                     <div class="meta">MRP: ${money(m.mrp)} • Rate: <b>${money(rate)}</b>${isParty ? ' <span class="badge badge-green">Party rate</span>' : ' <span class="badge badge-yellow">Default</span>'} • Exp: ${escapeHTML(m.expiry||'-')}</div>
@@ -5407,7 +5433,7 @@ Rules:
                 });
                 html += `</tbody></table></div>
                 <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">
-                    DEVELOP: <b>By</b> Md • <b>Talib</b> Ansari •
+                    Marg-style: <b>Free</b> scheme qty • <b>Dis%</b> item discount • <b>GST 5%</b> = CGST 2.5% + SGST 2.5%
                 </div>`;
                 container.innerHTML = html;
             }
@@ -8378,6 +8404,198 @@ Rules:
                 }
             });
         }
+        
+        // ============================================================
+        // KEYBOARD-ONLY MODE (PC without mouse)
+        // ============================================================
+        let kbMedIndex = -1;
+
+        function focusEl(id) {
+            const el = document.getElementById(id);
+            if (el) { el.focus(); el.select && el.select(); return true; }
+            return false;
+        }
+
+        function getMedResultItems() {
+            return Array.from(document.querySelectorAll("#billMedicineResults .result-item[data-med-id]"));
+        }
+
+        function highlightMedResult(idx) {
+            const items = getMedResultItems();
+            items.forEach(el => el.classList.remove("kb-active"));
+            if (!items.length) { kbMedIndex = -1; return; }
+            if (idx < 0) idx = items.length - 1;
+            if (idx >= items.length) idx = 0;
+            kbMedIndex = idx;
+            const el = items[kbMedIndex];
+            el.classList.add("kb-active");
+            el.scrollIntoView({ block: "nearest" });
+        }
+
+        function addHighlightedMed() {
+            const items = getMedResultItems();
+            if (kbMedIndex < 0 || !items[kbMedIndex]) {
+                // first result
+                if (items[0]) {
+                    kbMedIndex = 0;
+                    highlightMedResult(0);
+                } else return;
+            }
+            const id = items[kbMedIndex].getAttribute("data-med-id");
+            if (id) addToBillQty(id);
+            setTimeout(function() {
+                focusEl("billMedicineSearch");
+                const s = document.getElementById("billMedicineSearch");
+                if (s) { s.value = ""; searchBillMedicine(); }
+                kbMedIndex = -1;
+            }, 30);
+        }
+
+        function handleBillMedicineKey(e) {
+            const items = getMedResultItems();
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                highlightMedResult(kbMedIndex + 1);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                highlightMedResult(kbMedIndex - 1);
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (kbMedIndex >= 0) addHighlightedMed();
+                else if (items.length === 1) {
+                    kbMedIndex = 0;
+                    addHighlightedMed();
+                } else if (items.length > 1) {
+                    highlightMedResult(0);
+                }
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                e.target.value = "";
+                searchBillMedicine();
+                kbMedIndex = -1;
+            }
+        }
+
+        function handleMedResultKey(e, id) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const qty = document.getElementById("billPickQty_" + id);
+                if (qty) qty.focus();
+                else addToBillQty(id);
+            }
+        }
+
+        function openKeyboardHelp() {
+            const html = `
+            <div class="modal show" id="kbdHelpModal" onclick="if(event.target===this)closeModal('kbdHelpModal')">
+              <div class="modal-box" style="max-width:520px;">
+                <div class="modal-head"><h3>⌨️ Keyboard Shortcuts</h3>
+                <button class="modal-close" onclick="closeModal('kbdHelpModal')">✕</button></div>
+                <div style="font-size:13px;line-height:1.7;">
+                  <p><b>Global</b></p>
+                  <p><kbd>F1</kbd> This help · <kbd>Alt+1</kbd>… menus · <kbd>Alt+B</kbd> Billing · <kbd>Alt+D</kbd> Dashboard</p>
+                  <p><kbd>Alt+G</kbd> Grahak · <kbd>Alt+C</kbd> Clients · <kbd>Alt+H</kbd> History · <kbd>Esc</kbd> Close modal</p>
+                  <p><b>Billing</b></p>
+                  <p><kbd>/</kbd> or <kbd>F3</kbd> Medicine search</p>
+                  <p><kbd>F4</kbd> Client search</p>
+                  <p><kbd>↑</kbd> <kbd>↓</kbd> Select medicine · <kbd>Enter</kbd> Add to bill</p>
+                  <p><kbd>Tab</kbd> Next field · <kbd>Shift+Tab</kbd> Previous</p>
+                  <p><kbd>F2</kbd> Complete bill & save</p>
+                  <p><kbd>Esc</kbd> Clear medicine search</p>
+                  <p><b>Login</b></p>
+                  <p><kbd>Enter</kbd> Login</p>
+                </div>
+                <button class="btn btn-primary btn-block mt-12" onclick="closeModal('kbdHelpModal')">OK (Esc)</button>
+              </div>
+            </div>`;
+            let m = document.getElementById("kbdHelpModal");
+            if (m) m.remove();
+            document.body.insertAdjacentHTML("beforeend", html);
+        }
+
+        function navByShortcut(sectionId) {
+            if (typeof isStaff === "function" && isStaff() && STAFF_ALLOWED_SECTIONS && STAFF_ALLOWED_SECTIONS.indexOf(sectionId) < 0) {
+                toast("Staff — section band", "error");
+                return;
+            }
+            const btn = document.querySelector('.nav button[onclick*="' + sectionId + '"]');
+            showSection(sectionId, btn || null);
+            if (sectionId === "billing") {
+                setTimeout(function(){ focusEl("billClientSearch") || focusEl("billMedicineSearch"); }, 100);
+            }
+        }
+
+        document.addEventListener("keydown", function (e) {
+            // ignore when typing in textarea only for some keys - still allow F keys
+            const tag = (e.target && e.target.tagName) || "";
+            const typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target.isContentEditable;
+
+            // F1 help
+            if (e.key === "F1") {
+                e.preventDefault();
+                openKeyboardHelp();
+                return;
+            }
+            // Esc close top modal
+            if (e.key === "Escape") {
+                const help = document.getElementById("kbdHelpModal");
+                if (help) { closeModal("kbdHelpModal"); help.remove(); return; }
+                const open = document.querySelector(".modal.show");
+                if (open && open.id) { closeModal(open.id); return; }
+            }
+            // F2 complete bill
+            if (e.key === "F2") {
+                e.preventDefault();
+                if (document.getElementById("billing")?.classList.contains("active")) {
+                    completeBill();
+                } else {
+                    navByShortcut("billing");
+                    toast("Billing — F2 dubara complete ke liye");
+                }
+                return;
+            }
+            // F3 / slash medicine search
+            if (e.key === "F3" || (e.key === "/" && !typing)) {
+                e.preventDefault();
+                navByShortcut("billing");
+                setTimeout(function(){ focusEl("billMedicineSearch"); }, 80);
+                return;
+            }
+            if (e.key === "F4") {
+                e.preventDefault();
+                navByShortcut("billing");
+                setTimeout(function(){ focusEl("billClientSearch"); }, 80);
+                return;
+            }
+            // Alt+ shortcuts
+            if (e.altKey && !e.ctrlKey && !e.metaKey) {
+                const k = e.key.toLowerCase();
+                const map = {
+                    "1": "dashboard", "d": "dashboard",
+                    "2": "medicines", "m": "medicines",
+                    "3": "purchase", "p": "purchase",
+                    "4": "billing", "b": "billing",
+                    "5": "grahak", "g": "grahak",
+                    "6": "clients", "c": "clients",
+                    "7": "history", "h": "history",
+                    "8": "reports", "r": "reports",
+                    "0": "backup"
+                };
+                if (map[k]) {
+                    e.preventDefault();
+                    navByShortcut(map[k]);
+                }
+            }
+        });
+
+        // Reset highlight when search re-renders
+        const _origSearchBillMedicine = searchBillMedicine;
+        searchBillMedicine = function() {
+            kbMedIndex = -1;
+            _origSearchBillMedicine.apply(this, arguments);
+        };
+
+
         window.onload = initialize;
 
 
