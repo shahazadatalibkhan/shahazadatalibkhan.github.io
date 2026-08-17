@@ -1876,7 +1876,7 @@
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
                     <div style="flex:1;min-width:220px;">
                         <label style="font-size:12px;font-weight:600;color:var(--text-secondary);">🔍 Search Bimari / Symptom / Medicine</label>
-                        <input id="opdSearchInput" type="search" placeholder="बच्चा, बुखार, cough, दाद, पेट दर्द..." 
+                        <input id="opdSearchInput" type="search" placeholder="पेट दर्द, गैस, बुखार, सांस फूलना, खुजली, घाव, धड़कन..." 
                                oninput="searchOPDCases()" autocomplete="off" style="margin-top:4px;width:100%;">
                     </div>
                     <div style="min-width:140px;">
@@ -6103,13 +6103,83 @@ localStorage.setItem(OPD_CUSTOM_KEY, JSON.stringify(arr));
             return base.concat(custom);
         }
 
+        // Lakshan / Hinglish / Hindi → search keywords (bimari match)
+        const OPD_SYMPTOM_MAP = [
+            { keys: ["pet dard","पेट दर्द","petdard","stomach pain","belly pain","abdominal pain","peet dard"], add: ["abdominal","stomach","pain","acidity","constipation","colic","dysmenorrhea","gastritis","appendicitis","पेट","दर्द","ibs","gerd"] },
+            { keys: ["gas","गैस","gass","acidity","acid","burning chest","seene me jalan","सीने में जलन","khatti dakar"], add: ["acidity","gerd","dyspepsia","gas","bloating","pantoprazole","heartburn","एसिडिटी","जलन"] },
+            { keys: ["bukhar","बुखार","bukhaar","fever","tap","temperature","typhoid","viral fever"], add: ["fever","dengue","viral","pyrexia","malaria","typhoid","paracetamol","बुखार","fever"] },
+            { keys: ["saans fulna","saan fulna","saas fulna","सांस फूलना","saans phoolna","breathless","shortness of breath","saans lene me problem","saans lene me preshani","सांस लेने में तकलीफ","dyspnea","dama","asthma attack"], add: ["asthma","breath","dyspnea","wheeze","copd","bronchitis","shortness","respiratory","सांस","दम","levolin","salbutamol"] },
+            { keys: ["saans lene me takleef","saans takleef","breathing difficulty","difficulty breathing"], add: ["asthma","breath","dyspnea","wheeze","pneumonia","bronchiolitis","croup"] },
+            { keys: ["khansi","खांसी","cough","khanshi","balgam","sputum","dry cough","wet cough"], add: ["cough","khansi","bronchitis","asthma","urti","dextromethorphan","expectorant","खांसी"] },
+            { keys: ["khujli","खुजली","kharish","itching","itch","scabies","dad","daad","दाद","ringworm","tinea"], add: ["itch","scabies","tinea","eczema","allergy","dermatitis","खुजली","दाद","permethrin","antifungal"] },
+            { keys: ["ghaav","ghaow","ghaw","घाव","zakhm","wound","cut","injury","ulcer"], add: ["wound","injury","ulcer","infection","dressing","antibiotic","tetanus","घाव"] },
+            { keys: ["heart dard","heart me dard","dil me dard","सीने में दर्द","seene me dard","chest pain","angina","cardiac pain"], add: ["chest","cardiac","angina","heart","gerd","acidity","myocardial","सीना","दर्द"] },
+            { keys: ["dhadkan","धड़कन","dhadkan badhna","palpitation","heart beating fast","dil ki dhadkan"], add: ["palpitation","tachycardia","anxiety","thyroid","cardiac","धड़कन","heart"] },
+            { keys: ["sir dard","सिर दर्द","headache","migraine","half head"], add: ["headache","migraine","tension","sinus","सिर","दर्द"] },
+            { keys: ["ulti","उल्टी","vomiting","qai","matli","matali","nausea"], add: ["vomit","nausea","gastro","ors","ondansetron","उल्टी"] },
+            { keys: ["dast","दस्त","loose motion","diarrhea","diarrhoea","pet kharab","pechish"], add: ["diarrhea","diarrhoea","loose","ors","zinc","gastro","दस्त"] },
+            { keys: ["kabj","कब्ज","constipation","mal nahi"], add: ["constipation","lactulose","कब्ज","hard stool"] },
+            { keys: ["peshab jalan","पेशाब जलन","burning urine","uti","urine infection","peshab me jalan"], add: ["uti","urine","cystitis","burning","nitrofurantoin","पेशाब"] },
+            { keys: ["joro me dard","joint pain","gathiya","gathiya dard","body ache","badan dard","bajan dard"], add: ["joint","arthritis","gout","bodyache","myalgia","दर्द"] },
+            { keys: ["kamzori","कमजोरी","weakness","thakan","थकान","fatigue","anaemia","anemia"], add: ["anaemia","anemia","weakness","fatigue","iron","thyroid","कमजोरी"] },
+            { keys: ["bp high","high bp","hypertension","bp badhna","blood pressure"], add: ["hypertension","blood pressure","amlodipine","telmisartan","बीपी"] },
+            { keys: ["sugar","शुगर","diabetes","madhumeh","diabetes mellitus"], add: ["diabetes","sugar","metformin","glucose","मधुमेह"] },
+            { keys: ["safed pani","सफेद पानी","leukorrhea","discharge","yon se sraav"], add: ["leukorrhea","discharge","vaginal","fluconazole","candida","सफेद"] },
+            { keys: ["mahine me dard","period pain","periods dard","masik dard","dysmenorrhea"], add: ["dysmenorrhea","menses","period","mefenamic","माहवारी"] },
+            { keys: ["pathri","पथरी","stone","kidney stone","renal stone"], add: ["stone","calculus","kidney","ureteric","colic","पथरी"] },
+            { keys: ["fatty liver","फैटी लिवर","liver fat","yakan"], add: ["fatty","liver","nafld","hepatic","udiliv"] },
+            { keys: ["ankh","आँख","eye","red eye","aankh","jaundice eye"], add: ["eye","conjunctivitis","ophthal","आँख"] },
+            { keys: ["kaan","कान","ear","kan dard","ear pain"], add: ["ear","otitis","कान"] },
+            { keys: ["gale me dard","गले में दर्द","sore throat","tonsillitis","throat pain"], add: ["throat","tonsillitis","pharyngitis","गला"] },
+            { keys: ["skin allergy","skin rash","chamdi","pimple","allergy rash"], add: ["rash","allergy","dermatitis","urticaria","eczema"] },
+            { keys: ["worm","keede","कृमि","pet keede","albendazole"], add: ["worm","helminth","albendazole","कृमि"] },
+            { keys: ["neend","नींद","sleep","nind nahi aati","insomnia"], add: ["sleep","insomnia","anxiety"] },
+            { keys: ["bp low","low bp","giddiness","chakkar","चक्कर","dizziness"], add: ["dizziness","vertigo","hypotension","चक्कर"] }
+        ];
+
+        function opdNormalizeQuery(s) {
+            return String(s || "").toLowerCase()
+                .replace(/[\u0900-\u097F]+/g, function(m){ return m; }) // keep hindi
+                .replace(/saan\s*s/g, "saans")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function opdExpandSearchTerms(q) {
+            q = opdNormalizeQuery(q);
+            if (!q) return [];
+            var terms = [q];
+            // also individual words if multi-word
+            q.split(/\s+/).forEach(function(w){ if (w.length >= 2) terms.push(w); });
+            OPD_SYMPTOM_MAP.forEach(function(row) {
+                var hit = row.keys.some(function(k) {
+                    return q.indexOf(k) >= 0 || k.indexOf(q) >= 0;
+                });
+                if (hit) {
+                    terms = terms.concat(row.keys).concat(row.add);
+                }
+            });
+            // unique
+            var seen = {};
+            return terms.filter(function(t) {
+                t = String(t).toLowerCase().trim();
+                if (!t || t.length < 2 || seen[t]) return false;
+                seen[t] = true;
+                return true;
+            });
+        }
+
+        function opdCaseBlob(c) {
+            const medStr = (c.medicines||[]).map(function(m){return (m.name||'')+' '+(m.dose||'')+' '+(m.duration||'');}).join(' ');
+            return (c.id + ' ' + c.title + ' ' + c.titleHi + ' ' + c.symptoms + ' ' + c.symptomsHi + ' ' + c.diagnosis + ' ' + (c.diagnosisHi||'') + ' ' + (c.simple||'') + ' ' + (c.rx||[]).join(' ') + ' ' + medStr + ' ' + (c.advice||'') + ' ' + (c.tests||'') + ' ' + (c.testsHi||'') + ' ' + c.cat + ' ' + (c.keywords||'')).toLowerCase();
+        }
+
         function searchOPDCases() {
             const qRaw = (document.getElementById('opdSearchInput')?.value || '').trim();
-            const q = qRaw.toLowerCase();
+            const q = opdNormalizeQuery(qRaw);
             let cat = document.getElementById('opdCategoryFilter')?.value || '';
             let list = getOPDCases().slice();
 
-            // "बच्चा / bachha / child / peds" → Pediatrics category auto
             const childWords = ["बच्चा","बच्चे","बच्ची","bachha","bachche","bachhe","child","children","pediatric","paediatric","peds","infant","neonate","toddler","kids","kid"];
             const isChildSearch = childWords.some(function(w) { return q === w || q.indexOf(w) >= 0; });
             if (isChildSearch && !cat) {
@@ -6121,18 +6191,29 @@ localStorage.setItem(OPD_CUSTOM_KEY, JSON.stringify(arr));
             if (cat) list = list.filter(function(c) { return c.cat === cat; });
 
             if (q.length >= 1 && !isChildSearch) {
+                const terms = opdExpandSearchTerms(q);
                 list = list.filter(function(c) {
-                    const medStr = (c.medicines||[]).map(function(m){return (m.name||'')+' '+(m.dose||'')+' '+(m.duration||'');}).join(' ');
-                    const blob = (c.title + ' ' + c.titleHi + ' ' + c.symptoms + ' ' + c.symptomsHi + ' ' + c.diagnosis + ' ' + c.diagnosisHi + ' ' + c.simple + ' ' + (c.rx||[]).join(' ') + ' ' + medStr + ' ' + (c.advice||'') + ' ' + c.cat + ' ' + (c.keywords||'')).toLowerCase();
-                    return blob.indexOf(q) >= 0;
+                    const blob = opdCaseBlob(c);
+                    // direct full query
+                    if (blob.indexOf(q) >= 0) return true;
+                    // any expanded symptom keyword
+                    return terms.some(function(t) { return t.length >= 2 && blob.indexOf(t) >= 0; });
+                });
+                // soft rank: more term hits first
+                list.sort(function(a, b) {
+                    const ba = opdCaseBlob(a), bb = opdCaseBlob(b);
+                    const sa = terms.reduce(function(n,t){ return n + (ba.indexOf(t)>=0 ? 1 : 0); }, 0);
+                    const sb = terms.reduce(function(n,t){ return n + (bb.indexOf(t)>=0 ? 1 : 0); }, 0);
+                    return sb - sa;
                 });
             } else if (q.length >= 1 && isChildSearch) {
-                // already filtered by Pediatrics; optional extra keyword filter if more words
-                const rest = childWords.reduce(function(s,w){ return s.replace(w,' '); }, q).trim();
+                const rest = childWords.reduce(function(s,w){ return s.split(w).join(' '); }, q).trim();
                 if (rest.length >= 2) {
+                    const terms = opdExpandSearchTerms(rest);
                     list = list.filter(function(c) {
-                        const blob = (c.title + ' ' + c.titleHi + ' ' + c.symptoms + ' ' + c.symptomsHi + ' ' + c.simple).toLowerCase();
-                        return blob.indexOf(rest) >= 0;
+                        const blob = opdCaseBlob(c);
+                        if (blob.indexOf(rest) >= 0) return true;
+                        return terms.some(function(t){ return blob.indexOf(t) >= 0; });
                     });
                 }
             }
@@ -7723,9 +7804,14 @@ localStorage.setItem(OPD_CUSTOM_KEY, JSON.stringify(arr));
                 pool = allCases.filter(function(c){ return c.cat !== "Pediatrics"; });
             }
             function matchBlob(c) {
-                const blob = (c.id + " " + c.title + " " + c.titleHi + " " + c.symptoms + " " + c.symptomsHi + " " + c.diagnosis + " " + (c.diagnosisHi||"") + " " + c.cat + " " + (c.simple||"")).toLowerCase();
+                const blob = (typeof opdCaseBlob === "function") ? opdCaseBlob(c) : (c.id + " " + c.title + " " + c.titleHi + " " + c.symptoms + " " + c.symptomsHi + " " + c.diagnosis + " " + (c.diagnosisHi||"") + " " + c.cat + " " + (c.simple||"")).toLowerCase();
                 if ((childMode || isChildWord) && q.replace(/बच्चा|बच्चे|bachha|child|peds|pediatric/g,'').trim().length < 2) return true;
-                return blob.indexOf(q) >= 0;
+                if (blob.indexOf(q) >= 0) return true;
+                if (typeof opdExpandSearchTerms === "function") {
+                    var terms = opdExpandSearchTerms(q);
+                    return terms.some(function(t){ return t.length >= 2 && blob.indexOf(t) >= 0; });
+                }
+                return false;
             }
             let hits = pool.filter(matchBlob).slice(0, 15);
             let crossHint = "";
